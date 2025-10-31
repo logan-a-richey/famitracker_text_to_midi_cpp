@@ -1,0 +1,6 @@
+# .gitignore
+
+*.exe
+__pycache__
+input_files
+
