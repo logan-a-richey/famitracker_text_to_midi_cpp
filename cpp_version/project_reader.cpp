@@ -8,14 +8,44 @@
 #include <sstream>
 #include <unordered_set>
 
+std::string get_quote(const std::string& input_string) {
+    int start = 0;
+    int stop = 0;
+
+    for (int i = 0; i <= input_string.length(); ++i) {
+        if (input_string[i] == '\"') {
+            if (!start) { 
+                start = i; 
+            }
+            stop = i;
+        }
+    }
+    
+    // don't include the quotes
+    start++;
+    // stop--;
+
+    // error check
+    if (stop < start) {
+        return "";
+    }
+    int length = stop - start;
+    if (length <= 0) {
+        return "";
+    }
+
+    // return substring
+    return input_string.substr(start, stop - start);
+}
+
 void ProjectReader::handle_song_information(Project& project, const std::string& line, const std::string& tag) {
     std::cout << "handle_song_information: " << tag << std::endl;
+    std::cout << "quote = " << get_quote(line) << std::endl;
 }
 
 void ProjectReader::handle_global_settings(Project& project, const std::string& line, const std::string& tag) {
     std::cout << "handle_global_settings: " << tag << std::endl;
 }
-
 
 void ProjectReader::process_line(Project& project, const std::string& line, const std::string& tag) {
     static const std::unordered_set<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT"};
