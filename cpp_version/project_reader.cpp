@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_set>
+#include <unordered_map>
 
 std::string get_quote(const std::string& input_string) {
     int start = 0;
@@ -47,9 +48,19 @@ void ProjectReader::handle_global_settings(Project& project, const std::string& 
     std::cout << "handle_global_settings: " << tag << std::endl;
 }
 
+
 void ProjectReader::process_line(Project& project, const std::string& line, const std::string& tag) {
     static const std::unordered_set<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT"};
     static const std::unordered_set<std::string> global_settings_tags = {"MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS"};
+
+    using fptr = void(ProjectReader::*)(Project& project, const std::string& line, const std::string& tag);
+    static const std::unordered_map<std::string, fptr> dtable = {
+        {"TITLE", this->handle_song_information},
+        {"AUTHOR", this->handle_song_information},
+        {"COPYRIGHT", this->handle_song_information}
+    };
+  
+    // if item in map, call function
     
     // handle project metadata
     if (song_information_tags.find(tag) != song_information_tags.end()) {
