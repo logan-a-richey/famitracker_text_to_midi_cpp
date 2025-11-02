@@ -1,9 +1,0 @@
-# Famitracker test
-
-# Song info
-TITLE "test"
-AUTHOR "me"
-COPYRIGHT "2025"
-COMMENT "asdf"
-
-

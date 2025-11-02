@@ -1,0 +1,10 @@
+# TODO
+* Fix finding instrument macro (probably just bad key lookup)
+* Add missing Instrument methods
+* Add missing Track methods
+* Begin TrackParser
+* Begin TrackExporter
+* Import MidiWriter as a submodule
+* Use <filesystem> to put the output file in the correct place.
+
+* revisit IHandlers -> turn to template metaprogramming version or static fptr linking for compile-time function lookup.

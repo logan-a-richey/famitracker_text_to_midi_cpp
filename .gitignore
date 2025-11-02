@@ -3,4 +3,6 @@
 *.exe
 __pycache__
 input_files
+bin
+obj
 

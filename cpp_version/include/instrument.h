@@ -9,7 +9,9 @@
 struct Macro;
 
 struct BaseInst {
+
     virtual ~BaseInst() = default;
+    virtual void display();
 
     int index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut;
     std::string name;
@@ -22,16 +24,25 @@ struct BaseInst {
 };
 
 struct InstVRC7 : BaseInst {
+
+    void display() override;
+
     int patch;
     std::vector<int> registers;
 };
 
 struct InstN163 : BaseInst {
+
+    void display() override;
+
     int w_size, w_pos, w_count;
     std::unordered_map<int, std::vector<int>> wave_table;
 };
 
 struct InstFDS : BaseInst {
+
+    void display() override;
+
     bool mod_enable;
     int mod_speed;
     int mod_depth;

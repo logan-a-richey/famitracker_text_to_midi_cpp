@@ -13,7 +13,7 @@ std::string get_quote(const std::string& input_string) {
     int start = 0;
     int stop = 0;
 
-    for (int i = 0; i <= input_string.length(); ++i) {
+    for (unsigned long i = 0; i <= input_string.length(); ++i) {
         if (input_string[i] == '\"') {
             if (!start) { start = i; }
             stop = i;
@@ -60,23 +60,6 @@ std::vector<int> get_number_field(const std::string& input_string) {
     return numbers;
 }
 
-template<typename T>
-std::string vector_to_string(const std::vector<T>& vec){
-    std::ostringstream oss;
-    oss << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        if constexpr (std::is_same_v<T, std::string>) {
-            oss << "\'" << vec[i] << "\'";
-        } else {
-            oss << vec[i];
-        }
-        if (i + 1 < vec.size() ) {
-            oss << ", ";
-        }
-    }
-    oss << "]";
-    return oss.str();
-}
 
 std::string generate_macro_key(const std::string& tag, int macro_type, int macro_index) {
     std::ostringstream oss;

@@ -13,7 +13,6 @@
 #include <list>
 #include <sstream>
 
-
 // *****************************************************************************
 // SongInformationHandler
 
@@ -200,15 +199,30 @@ void InstrumentHandler::handle_base_inst(Project& project, const std::string& li
     }
 }
 
-void InstrumentHandler::handle_inst_vrc7(Project& project, const std::string& line, const std::string& tag){
+// TODO
+void InstrumentHandler::handle_inst_vrc7(
+    [[maybe_unused]] Project& project,
+    [[maybe_unused]] const std::string& line,
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] Handle VRC7: Under construction! " << std::endl;
 }
 
-void InstrumentHandler::handle_inst_n163(Project& project, const std::string& line, const std::string& tag){
+// TODO
+void InstrumentHandler::handle_inst_n163(
+    [[maybe_unused]] Project& project,
+    [[maybe_unused]] const std::string& line,
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] Handle N163: Under construction! " << std::endl;
 }
 
-void InstrumentHandler::handle_inst_fds(Project& project, const std::string& line, const std::string& tag){
+// TODO
+void InstrumentHandler::handle_inst_fds (
+    [[maybe_unused]] Project& project,
+    [[maybe_unused]] const std::string& line,
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] Handle FDS: Under construction! " << std::endl;
 }
 
@@ -233,19 +247,48 @@ void TrackHandler::handle(Project& project, const std::string& line, const std::
     }
 }
 
-void TrackHandler::handle_track(Project& project, const std::string& line, const std::string& tag) {
+// TODO
+void TrackHandler::handle_track(
+    [[maybe_unused]] Project& project, 
+    [[maybe_unused]] const std::string& line, 
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] TrackHandler method: " << tag << std::endl;
 }
-void TrackHandler::handle_columns(Project& project, const std::string& line, const std::string& tag) {
+
+// TODO
+void TrackHandler::handle_columns(
+    [[maybe_unused]] Project& project, 
+    [[maybe_unused]] const std::string& line, 
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] TrackHandler method: " << tag << std::endl;
 }
-void TrackHandler::handle_order(Project& project, const std::string& line, const std::string& tag) {
+
+// TODO
+void TrackHandler::handle_order(
+    [[maybe_unused]] Project& project, 
+    [[maybe_unused]] const std::string& line, 
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] TrackHandler method: " << tag << std::endl;
 }
-void TrackHandler::handle_pattern(Project& project, const std::string& line, const std::string& tag) {
+
+// TODO
+void TrackHandler::handle_pattern(
+    [[maybe_unused]] Project& project, 
+    [[maybe_unused]] const std::string& line, 
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] TrackHandler method: " << tag << std::endl;
 }
-void TrackHandler::handle_row(Project& project, const std::string& line, const std::string& tag) {
+
+// TODO
+void TrackHandler::handle_row(
+    [[maybe_unused]] Project& project, 
+    [[maybe_unused]] const std::string& line, 
+    [[maybe_unused]] const std::string& tag
+) {
     std::cout << "[TODO] TrackHandler method: " << tag << std::endl;
 }
 

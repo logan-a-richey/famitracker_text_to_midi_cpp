@@ -20,7 +20,7 @@ void ProjectReader::init() {
     current_pattern = 0;
 
     static const std::list<std::string> song_information_tags = { 
-        "TITLE", "AUTHOR", "COPYRIGHT"
+        "TITLE", "AUTHOR", "COPYRIGHT", "COMMENT"
     };
     static const std::list<std::string> global_settings_tags = {
         "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS"
@@ -50,14 +50,12 @@ void ProjectReader::init() {
     for (const auto& tag : global_settings_tags) { 
         dtable[tag] = &global_settings_handler; 
     }
-    /*
     for (const auto& tag : macro_tags) { 
         dtable[tag] = &macro_handler; 
     }
     for (const auto& tag : instrument_tags) { 
         dtable[tag] = &instrument_handler; 
     }
-    */
     /*
     for (const auto& tag : track_tags) { 
         dtable[tag] = &track_handler; 

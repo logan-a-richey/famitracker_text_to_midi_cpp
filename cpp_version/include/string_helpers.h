@@ -13,9 +13,6 @@ std::string trim(const std::string& s);
 
 std::vector<int> get_number_field(const std::string& input_string);
 
-template<typename T>
-std::string vector_to_string(const std::vector<T>& vec);
-
 std::string generate_macro_key(const std::string& tag, int macro_type, int macro_index);
 
 std::string generate_token_key(int pattern, int row, int col);
