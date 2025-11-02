@@ -2,6 +2,7 @@
 
 #include "project_reader.h"
 
+#include <list>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -9,92 +10,75 @@
 #include <unordered_set>
 #include <unordered_map>
 
-std::string get_quote(const std::string& input_string) {
-    int start = 0;
-    int stop = 0;
+#include "string_helpers.h"
 
-    for (int i = 0; i <= input_string.length(); ++i) {
-        if (input_string[i] == '\"') {
-            if (!start) { 
-                start = i; 
-            }
-            stop = i;
-        }
-    }
+#include "project.h"
+
+// -----------------------------------------------------------------------------
+
+void ProjectReader::init() {
+    current_pattern = 0;
+
+    static const std::list<std::string> song_information_tags = { 
+        "TITLE", "AUTHOR", "COPYRIGHT"
+    };
+    static const std::list<std::string> global_settings_tags = {
+        "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS"
+    };
+    static const std::list<std::string> macro_tags = {
+        "MACRO", "MACROVRC6", "MACRON163", "MACROS5B"
+    }; 
+    static const std::list<std::string> instrument_tags = {
+        "INST2A03", "INSTVRC6", "INSTVRC7", "INSTFDS", "INSTN163", "INSTS5B"
+    };
+    static const std::list<std::string> track_tags = {
+        "TRACK", "COLUMNS", "ORDER", "PATTERN", "ROW"
+    };
+
+    static SongInformationHandler song_information_handler;
+    static GlobalSettingsHandler global_settings_handler;
+    static MacroHandler macro_handler;
+    static InstrumentHandler instrument_handler;
+    static TrackHandler track_handler;
+
+    dtable.clear();
     
-    // don't include the quotes
-    start++;
-    // stop--;
-
-    // error check
-    if (stop < start) {
-        return "";
+    // link tags to functions
+    for (const auto& tag : song_information_tags) { 
+        dtable[tag] = &song_information_handler; 
     }
-    int length = stop - start;
-    if (length <= 0) {
-        return "";
+    for (const auto& tag : global_settings_tags) { 
+        dtable[tag] = &global_settings_handler; 
     }
-
-    // return substring
-    return input_string.substr(start, stop - start);
+    /*
+    for (const auto& tag : macro_tags) { 
+        dtable[tag] = &macro_handler; 
+    }
+    for (const auto& tag : instrument_tags) { 
+        dtable[tag] = &instrument_handler; 
+    }
+    */
+    /*
+    for (const auto& tag : track_tags) { 
+        dtable[tag] = &track_handler; 
+    }
+    */
 }
-
-void ProjectReader::handle_song_information(Project& project, const std::string& line, const std::string& tag) {
-    std::cout << "handle_song_information: " << tag << std::endl;
-    std::cout << "quote = " << get_quote(line) << std::endl;
-}
-
-void ProjectReader::handle_global_settings(Project& project, const std::string& line, const std::string& tag) {
-    std::cout << "handle_global_settings: " << tag << std::endl;
-}
-
 
 void ProjectReader::process_line(Project& project, const std::string& line, const std::string& tag) {
-    static const std::unordered_set<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT"};
-    static const std::unordered_set<std::string> global_settings_tags = {"MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS"};
+    // std::cout << "[D] Processing line: " << line << std::endl;
 
-    using fptr = void(ProjectReader::*)(Project& project, const std::string& line, const std::string& tag);
-    static const std::unordered_map<std::string, fptr> dtable = {
-        {"TITLE", this->handle_song_information},
-        {"AUTHOR", this->handle_song_information},
-        {"COPYRIGHT", this->handle_song_information}
-    };
-  
-    // if item in map, call function
-    
-    // handle project metadata
-    if (song_information_tags.find(tag) != song_information_tags.end()) {
-        handle_song_information(project, line, tag);
-    } 
-    else if (tag == "COMMENT") {
-        std::cout << "Handling comment" << std::endl;
-    }
-    else if (global_settings_tags.find(tag) != global_settings_tags.end()) {
-        handle_global_settings(project, line, tag);
-    } 
-
-    // handle track data
-    else if (tag == "TRACK") {
-        std::cout << "Handling: " << tag << std::endl;
-    }
-    else if (tag == "COLUMNS") {
-        std::cout << "Handling: " << tag << std::endl;
-    }
-    else if (tag == "ORDER") {
-        std::cout << "Handling: " << tag << std::endl;
-    }
-    else if (tag == "PATTERN") {
-        std::cout << "Handling: " << tag << std::endl;
-    }
-    else if (tag == "ROW") {
-        std::cout << "Handling: " << tag << std::endl;
-    }
-    else {
-        std::cout << "[W] Ignoring unknown line: " << line << std::endl;
+    auto it = dtable.find(tag);
+    if (it != dtable.end()) {
+        // std::cout << "[D] Found key : " << tag << std::endl;
+        (it->second)->handle(project, line, tag);
     }
 }
 
 void ProjectReader::read_project(const std::string& input_file, Project& project) {
+    // project init
+    init();
+    
     std::ifstream fh(input_file);
     if (!fh.is_open()) {
         std::cerr << "[E] could not open file " << input_file << std::endl;
@@ -110,18 +94,13 @@ void ProjectReader::read_project(const std::string& input_file, Project& project
         ss >> tag;
         
         // skip blank lines
-        if (tag.empty()) {
-            continue;
-        }
+        if (tag.empty()) { continue; }
         
         // skip comment lines 
-        if (tag[0] == '#') {
-            continue;
-        }
+        if (tag[0] == '#') { continue; }
 
         // std::cout << "First word = " << tag << std::endl;
         process_line(project, line, tag);
-
     }
     fh.close();
 }

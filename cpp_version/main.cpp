@@ -15,6 +15,8 @@ int main(int argc, char** argv) {
     const std::string input_file = argv[1];
     
     pr.read_project(input_file, p);
+    
+    p.display();
 
     return 0;
 }
