@@ -3,8 +3,8 @@
 #include "handlers.h"
 #include "project.h"
 #include "macro.h"
-
 #include "string_helpers.h"
+#include "utils.hpp"
 
 #include <iostream>
 #include <string>
@@ -27,7 +27,7 @@ void SongInformationHandler::handle(Project& project, const std::string& line, c
         std::string field = get_quote(line);
         project.comments.push_back(field);
     } else {
-        std::cerr << "[W] Unknown Song Information tag: " << tag << std::endl;
+        std::cerr << "[WARN] Unknown Song Information tag: " << tag << std::endl;
     }
 }
 
@@ -77,7 +77,7 @@ void GlobalSettingsHandler::handle(Project& project, const std::string& line, co
     } else if (tag == "N163CHANNELS") {
         try_to_add_project_field(second_word_str, project.n163channels);
     } else {
-        std::cerr << "[W] Unknown Global Setting tag: " << tag << std::endl;
+        std::cerr << "[WARN] Unknown Global Setting tag: " << tag << std::endl;
     }
 }
 
@@ -94,6 +94,9 @@ void MacroHandler::handle(Project& project, const std::string& line, const std::
     int macro_type, macro_index, macro_loop, macro_release, macro_setting;
     ss >> macro_type >> macro_index >> macro_loop >> macro_release >> macro_setting;
     std::vector<int> sequence = get_number_field(line);
+    
+    std::cout << "LINE: " << line << std::endl;
+    std::cout << "VEC TO STRING: " << vector_to_string(sequence) << "\n";
 
     // create macro and assign values to it
     Macro m;
@@ -102,9 +105,12 @@ void MacroHandler::handle(Project& project, const std::string& line, const std::
     m.macro_loop = macro_loop;
     m.macro_release = macro_release;
     m.macro_setting = macro_setting;
-    m.sequence = std::move(sequence);
+    m.sequence = sequence;
 
     std::string macro_key = generate_macro_key(tag, macro_type, macro_index);
+    // std::cout << "[D] macro_key_created = " << macro_key << std::endl;
+
+    m.label = macro_key;
 
     project.macros[macro_key] = std::move(m);
 }
@@ -122,7 +128,7 @@ void InstrumentHandler::handle(Project& project, const std::string& line, const 
     } else if (tag == "INSTVRC7") {
         handle_inst_vrc7(project, line, tag);
     } else {
-        std::cerr << "[W] Unknown instrument tag: " << tag << std::endl;
+        std::cerr << "[WARN] Unknown instrument tag: " << tag << std::endl;
         return;
     }
 }
@@ -152,7 +158,8 @@ void InstrumentHandler::handle_base_inst(Project& project, const std::string& li
     
     // for instrument family lookup
     static std::unordered_map<std::string, std::string> inst_to_macro_family = {
-        {"INST2A03", "MACRO2A03"},
+        // {"INST2A03", "MACRO2A03"},
+        {"INST2A03", "MACRO"},
         {"INSTVRC6", "MACROVRC6"},
         {"INSTS5B", "MACROS5B"}
     };
@@ -168,7 +175,7 @@ void InstrumentHandler::handle_base_inst(Project& project, const std::string& li
     struct InstFields {
         int macro_type;
         int macro_index;
-        Macro** inst_macro_ptr;
+        std::optional<Macro>* inst_macro_ptr;
     };
 
     std::vector<InstFields> inst_fields = {
@@ -181,20 +188,26 @@ void InstrumentHandler::handle_base_inst(Project& project, const std::string& li
     
     // assign macros to instrument from project.macros if they exist
     for (const auto& field : inst_fields) {
-        if (field.macro_index < 0) { continue; }
-        if (field.macro_type < 0 || field.macro_type > 5) { continue; }
+        if (field.macro_index < 0) { 
+            continue; 
+        }
+        if (field.macro_type < 0 || field.macro_type > 5) { 
+            continue; 
+        }
 
         std::string macro_family = inst_to_macro_family[tag];
         std::string macro_key = generate_macro_key(macro_family, field.macro_type, field.macro_index);
+        
+        // std::cout << "[D] macro lookup : " << macro_key << std::endl;
 
         auto it = project.macros.find(macro_key);
 
         if (it != project.macros.end() ) {
             // assign macro to instrument Macro* pointer
-            *field.inst_macro_ptr = &(it->second);
-            // std::cout << "Found instrument macro: " << macro_key << std::endl;
+            *field.inst_macro_ptr = (it->second);
+            std::cout << "[D] FOUND instrument macro: " << macro_key << std::endl;
         } else {
-            std::cerr << "[W] Could not find instrument macro: " << macro_key << std::endl;
+            std::cerr << "[WARN] NOT FOUND not find instrument macro: " << macro_key << std::endl;
         }
     }
 }
@@ -243,7 +256,7 @@ void TrackHandler::handle(Project& project, const std::string& line, const std::
     } else if (tag == "ROW") {
         handle_row(project, line, tag);
     } else {
-        std::cerr << "[W] Unknown Track Handler tag: " << tag << std::endl;
+        std::cerr << "[WARN] Unknown Track Handler tag: " << tag << std::endl;
     }
 }
 

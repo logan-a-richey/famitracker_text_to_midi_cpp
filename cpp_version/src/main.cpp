@@ -5,6 +5,7 @@
 
 #include "project_reader.h"
 #include "project.h"
+#include "utils.hpp"
 
 int main(int argc, char** argv) {
 
@@ -27,5 +28,9 @@ int main(int argc, char** argv) {
     // TODO sort project data
     // TODO export project data
 
+    std::cout << "Macro labels: " << std::endl;
+    for (const auto& pair : project.macros) {
+        std::cout << pair.first << ": " << vector_to_string(pair.second.sequence) << std::endl;
+    }
     return 0;
 }
