@@ -32,9 +32,10 @@ def main():
     
     # load data into project
     project_reader.read_project(project, input_file)
-    project_parser.parse_project(project)
-    
     project.display()
+    
+    # unroll patterns
+    project_parser.parse_project(project)
     
     # export project text into midi file
     project_exporter.export_project(project, output_path)
