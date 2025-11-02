@@ -60,6 +60,29 @@ std::vector<int> get_number_field(const std::string& input_string) {
     return numbers;
 }
 
+// TODO test this
+std::vector<int> get_hex_field(const std::string& input_string) {
+    static std::regex re_after_colon(":.*");
+    static std::regex integer_regex("([0-9A-F]+");
+
+    std::smatch field_match;
+
+    if (!std::regex_match(input_string, field_match, re_after_colon)) { 
+        return {}; 
+    }
+    std::string field_match_str = field_match[1];
+
+    std::smatch number_matches;
+    auto begin = field_match_str.cbegin();
+    auto end = field_match_str.cend();
+
+    std::vector<int> numbers;
+    while (std::regex_search(begin, end, number_matches, integer_regex)) {
+        numbers.push_back(std::stoul(number_matches.str(), nullptr, 16));
+        begin = number_matches.suffix().first; // move past the last match
+    }
+    return numbers;
+}
 
 std::string generate_macro_key(const std::string& tag, int macro_type, int macro_index) {
     std::ostringstream oss;
