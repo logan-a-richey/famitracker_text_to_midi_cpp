@@ -3,21 +3,51 @@
 # pragma once
 
 #include <string>
-#include <vector>
 #include <sstream>
-#include <unordered_map>
-#include <type_traits>
+
+#include <vector>
+#include <unordered_set>
+
+// #include <unordered_map>
+// #include <type_traits>
 
 template <typename T>
 std::string vector_to_string(const std::vector<T>& vec) {
     std::ostringstream oss;
+    
     oss << "[";
-    for (size_t i = 0; i < vec.size(); ++i) {
-        oss << vec[i];
-        if (i + 1 < vec.size() ) {
+    
+    int i = 0;
+    int n = vec.size();
+    
+    for (const auto& x : vec) {
+        oss << x;
+        if (i + 1 < n) {
             oss << ", ";
         }
     }
+
     oss << "]";
     return oss.str();
 }
+
+template <typename T>
+std::string uset_to_string(const std::unordered_set<T>& uset) {
+    std::ostringstream oss;
+    
+    oss << "{";
+    
+    int i = 0;
+    int n = uset.size();
+    
+    for (const auto& x : uset) {
+        oss << x;
+        if (i + 1 < n) {
+            oss << ", ";
+        }
+    }
+    
+    oss << "}";
+    return oss.str();
+}
+

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "macro.h"
-
+#include "key_dpcm.h"
 #include "constants.h"
 
 struct FDS_Properties {
@@ -19,7 +19,7 @@ struct FDS_Properties {
 
 struct N163_Properties {
     int w_size, w_pos, w_count;
-    std::unordered_map<int, std::vector<int>> n163_wave_table;
+    std::unordered_map<int, std::vector<int>> wave_table;
 };
 
 struct VRC7_Properties {
@@ -35,7 +35,7 @@ struct Instrument {
     int index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut;
     std::string name;
     std::optional<Macro> mac_vol, mac_arp, mac_pit, mac_hpi, mac_dut;
-    // std::unordered_map<int, KeyDpcm> key_dpcm_notes;
+    std::unordered_map<int, KeyDpcm> key_dpcm_notes;
 
     // Special Properties
     FDS_Properties fds_settings;

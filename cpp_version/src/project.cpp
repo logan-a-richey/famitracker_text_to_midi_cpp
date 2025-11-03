@@ -30,8 +30,15 @@ std::string Project::to_str() const {
     
     oss << "\n--- Macros ---\n";
     for (const auto& x : macros) {
-        oss << "'" << x.first << "'" << ": " << vector_to_string(x.second.sequence) << "\n";
+        oss << "'" << x.first << "': " << vector_to_string(x.second.sequence) << "\n";
     }
+    
+    oss << "\n--- Grooves ---\n";
+    for (const auto& x : macros) {
+        oss << "Groove " << x.first << " : " << vector_to_string(x.second.sequence) << "\n";
+    }
+    oss << "\n--- Use Groove ---\n";
+    oss << uset_to_string(use_groove) << "\n";
 
     oss << "\n--- Instruments ---\n";
     for (const auto& x : instruments) {
@@ -40,7 +47,8 @@ std::string Project::to_str() const {
      
     oss << "\n--- Tracks ---\n";
     for (size_t i = 0; i < tracks.size(); ++i) {
-        oss << "Track " << i << ": " << "'" << tracks[i].name << "'" << "\n";
+        oss << "Track " << i << ": '" << tracks[i].name << "', " 
+            << "Tokens: " << tracks[i].tokens.size() << "\n";
     }
 
     return oss.str();
