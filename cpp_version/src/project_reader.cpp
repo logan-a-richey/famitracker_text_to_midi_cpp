@@ -18,8 +18,8 @@
 #include "track.h"
 
 #include "constants.h"
-#include "string_helpers.hpp"
-#include "key_gen.hpp"
+#include "string_helpers.h"
+#include "key_gen.h"
 // #include "container_printing.hpp"
 
 // Ctor and Init Dtable
@@ -531,6 +531,8 @@ void ProjectReader::handle_row( Project& project, const std::string& line) {
 
     int row_idx = convert_hex_str_to_int(tag);
 
+    // asdf : aaa : bbb : ccc 
+    // we want: {"aaa", "bbb", "ccc"}
     std::vector<std::string> tokens = get_colon_fields(line);
     // std::cout << "[D] tokens.size = " << tokens.size() << std::endl;
 
@@ -542,6 +544,8 @@ void ProjectReader::handle_row( Project& project, const std::string& line) {
         }
         std::string token_key = generate_token_key(current_pattern, row_idx, i);
         current_track.tokens.insert( {token_key, tokens[i]} );
+        // current_track.tokens.insert( std::pair<std::string, std::string>(token_key, tokens[i]) );
+
         // std::cout << "[D] Added item: key='" << token_key << "', val='" << tokens[i] << "'" << std::endl;
     }
 }

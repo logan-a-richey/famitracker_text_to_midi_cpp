@@ -6,4 +6,4 @@ input_files
 bin
 obj
 .vscode
-
+out.txt

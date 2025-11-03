@@ -4,7 +4,8 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
 
 # Directories
 SRCDIR = src
-INCDIR = src # NOTE this is temporary - will move h files into include/
+# INCDIR = src # NOTE this is temporary - will move h files into include/
+INCDIR = include 
 BINDIR = bin
 OBJDIR = obj
 

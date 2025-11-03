@@ -8,6 +8,9 @@ struct Project;
 
 class ProjectExporter {
 public:
+    ProjectExporter() = default;
+    ~ProjectExporter() = default;
+
     void execute(const Project& p, const std::string& output_dir);
 };
 

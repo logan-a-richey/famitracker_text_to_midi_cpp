@@ -21,4 +21,9 @@ struct Groove {
         size(m_size), 
         sequence(m_seq) { /* */
     }
+
+    // Dtor
+    ~Groove() {
+        sequence.clear();
+    }
 };

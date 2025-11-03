@@ -12,6 +12,7 @@ struct Track {
     std::vector<int> eff_cols;
     std::unordered_map<int, std::vector<int>> orders;
     std::unordered_map<std::string, std::string> tokens;
+    std::vector<std::string> lines;
 
 public:
     // Ctor
@@ -20,6 +21,15 @@ public:
     // Ctor2
     Track( const std::string& name_, int num_rows_, int speed_, int tempo_ );
     
+
+    // Dtor
+    ~Track() {
+        eff_cols.clear();
+        orders.clear();
+        tokens.clear();
+        lines.clear();
+    }
+
     std::string to_str() const;
 };
 

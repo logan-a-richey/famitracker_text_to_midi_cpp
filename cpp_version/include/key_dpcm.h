@@ -28,4 +28,7 @@ struct KeyDpcm {
         loop_point(m_loop_point),
         delta(m_delta) { /* */
     }
+
+    // Dtor
+    ~KeyDpcm() = default;
 };

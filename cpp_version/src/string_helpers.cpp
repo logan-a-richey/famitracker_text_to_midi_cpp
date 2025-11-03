@@ -1,6 +1,6 @@
 // string_helpers.hpp
 
-#pragma once
+#include "string.h"
 
 #include <string>
 #include <iostream>

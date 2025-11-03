@@ -38,6 +38,17 @@ public:
     // Ctor
     Project() = default;
 
+    // Dtor
+    ~Project() {
+        comments.clear();
+        macros.clear();
+        dpcm_samples.clear();
+        instruments.clear();
+        grooves.clear();
+        use_groove.clear();
+        tracks.clear();
+    }
+
     std::string to_str() const;
 };
 

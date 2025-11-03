@@ -65,6 +65,24 @@ struct Instrument {
         seq_dut(m_seq_dut),
         name(m_name) { /* */ 
     }
+
+    // Dtor
+    ~Instrument() {
+        mac_vol.reset();
+        mac_arp.reset();
+        mac_pit.reset();
+        mac_hpi.reset();
+        mac_dut.reset();
+        
+        key_dpcm_notes.clear();
+        
+        fds_settings.fds_wave.clear();
+        fds_settings.fds_mod.clear();
+        
+        n163_settings.wave_table.clear();
+
+        vrc7_settings.registers.clear();
+    }
 };
 
 
