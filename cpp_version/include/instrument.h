@@ -46,25 +46,8 @@ struct Instrument {
     Instrument() = default;
     
     // Ctor2  
-    Instrument(
-        InstrumentFamily m_family,
-        int m_index, 
-        int m_seq_vol, 
-        int m_seq_arp, 
-        int m_seq_pit, 
-        int m_seq_hpi, 
-        int m_seq_dut,
-        const std::string& m_name
-    ) :
-        family(m_family),
-        index(m_index),
-        seq_vol(m_seq_vol),
-        seq_arp(m_seq_arp),
-        seq_pit(m_seq_pit),
-        seq_hpi(m_seq_hpi),
-        seq_dut(m_seq_dut),
-        name(m_name) { /* */ 
-    }
+    Instrument( InstrumentFamily m_family, int m_index, int m_seq_vol, int m_seq_arp, int m_seq_pit, int m_seq_hpi, int m_seq_dut, const std::string& m_name) 
+        : family(m_family), index(m_index), seq_vol(m_seq_vol), seq_arp(m_seq_arp), seq_pit(m_seq_pit), seq_hpi(m_seq_hpi), seq_dut(m_seq_dut), name(m_name) { /* */ }
 
     // Dtor
     ~Instrument() {

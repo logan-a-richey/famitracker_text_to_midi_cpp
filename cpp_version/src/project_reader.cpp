@@ -75,6 +75,11 @@ ProjectReader::ProjectReader() {
     dtable["ROW"] = [this](Project& project, const std::string& line) { handle_row(project, line); };
 }
 
+// Dtor
+ProjectReader::~ProjectReader() {
+    dtable.clear();
+}
+
 void ProjectReader::handle_song_information(Project& project, const std::string& line) {
     std::stringstream ss(line);
     std::string tag;

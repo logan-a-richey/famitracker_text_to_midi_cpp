@@ -21,7 +21,6 @@ public:
     // Ctor2
     Track( const std::string& name_, int num_rows_, int speed_, int tempo_ );
     
-
     // Dtor
     ~Track() {
         eff_cols.clear();

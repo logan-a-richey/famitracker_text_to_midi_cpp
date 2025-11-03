@@ -11,7 +11,7 @@ class ProjectReader {
 public:
     // Ctor
     ProjectReader();
-    ~ProjectReader() = default;
+    ~ProjectReader();
 
     // Main entry point
     void execute(Project& project, const std::string& input_file);

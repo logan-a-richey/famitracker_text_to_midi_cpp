@@ -17,5 +17,10 @@ public:
     DpcmSample() = default;
 
     // Ctor2
-    DpcmSample(int a, int b, const std::string& c) : index(a), size(b), name(c) {}
+    DpcmSample(int a, int b, const std::string& c) : index(a), size(b), name(c) { /* */ }
+
+    // Dtor
+    ~DpcmSample() {
+        data.clear();
+    }
 };

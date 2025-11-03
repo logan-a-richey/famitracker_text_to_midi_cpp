@@ -24,15 +24,6 @@ struct Project {
     std::unordered_map<int, Groove> grooves;
     std::unordered_set<int> use_groove;
     std::vector<Track> tracks;
-
-    /*
-    Project() {
-        macros.reserve(64);
-        dpcm_samples.reserve(64);
-        instruments.reserve(64);
-        grooves.reserve(64);
-    }
-    */
     
 public:
     // Ctor
