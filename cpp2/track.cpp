@@ -8,6 +8,8 @@
 
 #include "track.h"
 
+#include "container_printing.hpp"
+
 // ctor
 Track::Track(std::string name_, int num_rows_, int speed_, int tempo_) {
     name = name_;
@@ -29,17 +31,18 @@ std::string Track::to_str() const {
     oss << "'num_cols': " << num_cols << ", ";
     oss << "'speed': " << speed << ", ";
     oss << "'tempo': " << tempo << ", ";
+    
     oss << "'orders': " << "{";
-    for (const auto& p : orders) {
-        oss << p.first << ": ";
-        oss << "[";
-        for (size_t i = 0; i < (p.second).size(); ++i) {
-            oss << (p.second)[i];
-            if (i + 1 < (p.second).size() ) {
-                oss << ", ";
-            }
-        }
-        oss << "]";
+    
+    int num_orders = orders.size();
+    int it = 0;
+    for (const auto& pair : orders) {
+        oss << pair.first << ": ";
+        oss << vector_to_string(pair.second);
+        if (it + 1 < num_orders) {
+            oss << ", ";
+        } 
+        it++;
     }
     oss << "}, ";
 

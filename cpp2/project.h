@@ -4,15 +4,18 @@
 
 #include <string>
 #include <vector>
-// #include <unordered_map>
+#include <unordered_map>
 
 #include "track.h"
+#include "macro.h"
+#include "instrument.h"
 
 struct Project {
     std::string title, author, copyright;
     std::vector<std::string> comments;
     int machine, framerate, expansion, vibrato, split, n163channels;
-    // std::unordered_map<std::string, Macro> macros;
+    
+    std::unordered_map<std::string, Macro> macros;
     // std::unordered_map<int, DpcmSample> dpcm_samples;
     // std::unordered_map<int, Instrument> instruments;
     // std::unordered_set<int, Groove> usergroove;

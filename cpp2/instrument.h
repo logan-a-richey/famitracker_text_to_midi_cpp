@@ -9,14 +9,7 @@
 
 #include "macro.h"
 
-enum InstrumentFamily {
-    INST_2A03,
-    INST_VRC6,
-    INST_VRC7,
-    INST_N163,
-    INST_FDS,
-    INST_S5B
-};
+#include "constants.h"
 
 struct FDS_Properties {
     bool fds_mod_enable;
