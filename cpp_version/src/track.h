@@ -14,8 +14,12 @@ struct Track {
     std::unordered_map<std::string, std::string> tokens;
 
 public:
-    // ctor
-    Track(std::string name_, int num_rows_, int speed_, int tempo_);
+    // Ctor
+    Track() = default;
+
+    // Ctor2
+    Track( const std::string& name_, int num_rows_, int speed_, int tempo_ );
+    
     std::string to_str() const;
 };
 

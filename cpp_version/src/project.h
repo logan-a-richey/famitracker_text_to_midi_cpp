@@ -33,8 +33,11 @@ struct Project {
         grooves.reserve(64);
     }
     */
-
+    
 public:
+    // Ctor
+    Project() = default;
+
     std::string to_str() const;
 };
 

@@ -25,6 +25,7 @@ std::string vector_to_string(const std::vector<T>& vec) {
         if (i + 1 < n) {
             oss << ", ";
         }
+        i++;
     }
 
     oss << "]";
@@ -45,6 +46,7 @@ std::string uset_to_string(const std::unordered_set<T>& uset) {
         if (i + 1 < n) {
             oss << ", ";
         }
+        i++;
     }
     
     oss << "}";

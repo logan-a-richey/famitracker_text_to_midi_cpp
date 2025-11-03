@@ -1,7 +1,7 @@
 // project.cpp
 
 #include "project.h"
-#include "container_printing.hpp"
+// #include "container_printing.hpp"
 
 #include <string>
 #include <sstream>
@@ -28,17 +28,24 @@ std::string Project::to_str() const {
     oss << "split: " << split << "\n";
     oss << "n163channels: " << n163channels << "\n";
     
+    /*
     oss << "\n--- Macros ---\n";
     for (const auto& x : macros) {
         oss << "'" << x.first << "': " << vector_to_string(x.second.sequence) << "\n";
     }
+    */
     
+    /*
     oss << "\n--- Grooves ---\n";
     for (const auto& x : macros) {
         oss << "Groove " << x.first << " : " << vector_to_string(x.second.sequence) << "\n";
     }
+    */
+
+    /*
     oss << "\n--- Use Groove ---\n";
     oss << uset_to_string(use_groove) << "\n";
+    */
 
     oss << "\n--- Instruments ---\n";
     for (const auto& x : instruments) {

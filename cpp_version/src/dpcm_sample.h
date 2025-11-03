@@ -9,8 +9,10 @@ struct DpcmSample {
     int index;
     int size;
     std::string name;
+  
     std::vector<int> data;
-
+    
+public:
     // Ctor
     DpcmSample() = default;
 

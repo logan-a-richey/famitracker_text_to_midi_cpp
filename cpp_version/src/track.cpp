@@ -11,7 +11,7 @@
 #include "container_printing.hpp"
 
 // ctor
-Track::Track(std::string name_, int num_rows_, int speed_, int tempo_) {
+Track::Track(const std::string& name_, int num_rows_, int speed_, int tempo_) {
     name = name_;
     num_rows = num_rows_;
     speed = speed_;
