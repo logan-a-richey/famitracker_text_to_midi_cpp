@@ -34,49 +34,54 @@ ProjectReader::ProjectReader() {
     
     // metadata handlers
     for (const auto& tag : song_information_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_song_information(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line) { handle_song_information(project, line); };
     }
     for (const auto& tag : global_settings_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_global_settings(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line) { handle_global_settings(project, line); };
     }
 
     // macro handlers
     for (const auto& tag : macro_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_macro(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line) { handle_macro(project, line); };
     }
     
     // dpcm handlers
-    dtable["DPCMDEF"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_dpcm_def(project, line, tag); };
-    dtable["DPCM"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_dpcm_data(project, line, tag); };
+    dtable["DPCMDEF"] = [this](Project& project, const std::string& line) { handle_dpcm_def(project, line); };
+    dtable["DPCM"] = [this](Project& project, const std::string& line) { handle_dpcm_data(project, line); };
 
     // groove handlers
-    dtable["GROOVE"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_groove(project, line, tag); };
-    dtable["USEGROOVE"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_use_groove(project, line, tag); };
+    dtable["GROOVE"] = [this](Project& project, const std::string& line) { handle_groove(project, line); };
+    dtable["USEGROOVE"] = [this](Project& project, const std::string& line) { handle_use_groove(project, line); };
 
     // instrument handlers
     for (const auto& tag : basic_inst_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_inst_basic(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line) { handle_inst_basic(project, line); };
     }
-    dtable["INSTVRC7"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_inst_vrc7(project, line, tag); };
-    dtable["INSTFDS"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_inst_fds(project, line, tag); };
+    dtable["INSTVRC7"] = [this](Project& project, const std::string& line) { handle_inst_vrc7(project, line); };
+    dtable["INSTFDS"] = [this](Project& project, const std::string& line) { handle_inst_fds(project, line); };
     
     // special handlers 
-    dtable["KEYDPCM"] =  [this](Project& project, const std::string& line, const std::string& tag) { handle_key_dpcm(project, line, tag); };
-    dtable["FDSWAVE"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_fds_wave(project, line, tag); };
-    dtable["FDSMOD"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_fds_mod(project, line, tag); };
-    dtable["FDSMACRO"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_fds_macro(project, line, tag); };
-    dtable["N163WAVE"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_n163_wave(project, line, tag); };
+    dtable["KEYDPCM"] =  [this](Project& project, const std::string& line) { handle_key_dpcm(project, line); };
+    dtable["FDSWAVE"] = [this](Project& project, const std::string& line) { handle_fds_wave(project, line); };
+    dtable["FDSMOD"] = [this](Project& project, const std::string& line) { handle_fds_mod(project, line); };
+    dtable["FDSMACRO"] = [this](Project& project, const std::string& line) { handle_fds_macro(project, line); };
+    dtable["N163WAVE"] = [this](Project& project, const std::string& line) { handle_n163_wave(project, line); };
 
     // track handlers
-    dtable["TRACK"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_track(project, line, tag); };
-    dtable["COLUMNS"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_columns(project, line, tag); };
-    dtable["ORDER"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_order(project, line, tag); };
-    dtable["PATTERN"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_pattern(project, line, tag); };
-    dtable["ROW"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_row(project, line, tag); };
+    dtable["TRACK"] = [this](Project& project, const std::string& line) { handle_track(project, line); };
+    dtable["COLUMNS"] = [this](Project& project, const std::string& line) { handle_columns(project, line); };
+    dtable["ORDER"] = [this](Project& project, const std::string& line) { handle_order(project, line); };
+    dtable["PATTERN"] = [this](Project& project, const std::string& line) { handle_pattern(project, line); };
+    dtable["ROW"] = [this](Project& project, const std::string& line) { handle_row(project, line); };
 }
 
-void ProjectReader::handle_song_information(Project& project, const std::string& line, const std::string& tag) {
+void ProjectReader::handle_song_information(Project& project, const std::string& line) {
+    std::stringstream ss(line);
+    std::string tag;
+    ss >> tag;
+
     std::string value = get_quote(line);
+
     if (value.empty()) { return; }
 
     if (tag == "TITLE") { project.title = value;    }
@@ -86,14 +91,14 @@ void ProjectReader::handle_song_information(Project& project, const std::string&
     else { std::cerr << "[E] Unknown tag: " << tag << std::endl; }
 }
 
-void ProjectReader::handle_global_settings(Project& project, const std::string& line, const std::string& tag) {
+void ProjectReader::handle_global_settings(Project& project, const std::string& line) {
     // TODO use regex to get the number value
     
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int value;
     
-    ss >> word;
+    ss >> tag;
     ss >> value;
 
     if (tag == "MACHINE") { project.machine = value; }
@@ -105,7 +110,7 @@ void ProjectReader::handle_global_settings(Project& project, const std::string& 
     else { std::cerr << "Unknown tag: " << tag << std::endl; }
 }
 
-void ProjectReader::handle_macro(Project& project, const std::string& line, const std::string& tag) {
+void ProjectReader::handle_macro(Project& project, const std::string& line) {
     static std::unordered_map<std::string, InstrumentFamily> inst_t_map = {
         {"MACRO", INST_2A03},
         {"MACROVRC6", INST_VRC6},
@@ -117,8 +122,8 @@ void ProjectReader::handle_macro(Project& project, const std::string& line, cons
     };
 
     std::stringstream ss(line);
-    std::string word;
-    ss >> word;
+    std::string tag;
+    ss >> tag;
 
     int type, index, loop, release, setting;
     ss >> type >> index >> loop >> release >> setting;
@@ -137,12 +142,12 @@ void ProjectReader::handle_macro(Project& project, const std::string& line, cons
 }
 
 
-void ProjectReader::handle_dpcm_def(Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_dpcm_def(Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int dpcm_idx, sample_size;
 
-    ss >> word >> dpcm_idx >> sample_size;
+    ss >> tag >> dpcm_idx >> sample_size;
     std::string name = get_quote(line);
     
     DpcmSample obj(dpcm_idx, sample_size, name);
@@ -150,7 +155,7 @@ void ProjectReader::handle_dpcm_def(Project& project, const std::string& line, [
     project.dpcm_samples[dpcm_idx] = std::move(obj);
 }
 
-void ProjectReader::handle_dpcm_data(Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_dpcm_data(Project& project, const std::string& line) {
     auto it = project.dpcm_samples.find(current_dpcm_idx);
     if (it == project.dpcm_samples.end() ) {
         return;
@@ -165,12 +170,12 @@ void ProjectReader::handle_dpcm_data(Project& project, const std::string& line, 
     }
 }
 
-void ProjectReader::handle_groove(Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_groove(Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int idx, size;
 
-    ss >> word >> idx >> size;
+    ss >> tag >> idx >> size;
     std::string text_after_colon = get_text_after_colon(line);
     std::vector<int> seq = get_int_list(text_after_colon);
 
@@ -178,7 +183,7 @@ void ProjectReader::handle_groove(Project& project, const std::string& line, [[m
     project.grooves.insert( {idx, std::move(g)} );
 }
 
-void ProjectReader::handle_use_groove(Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_use_groove(Project& project, const std::string& line) {
     std::string text_after_colon = get_text_after_colon(line);
     std::vector<int> nums = get_int_list(text_after_colon);
     for (const auto& num : nums) {
@@ -186,7 +191,7 @@ void ProjectReader::handle_use_groove(Project& project, const std::string& line,
     }
 }
 
-void ProjectReader::handle_inst_basic(Project& project, const std::string& line, const std::string& tag) {
+void ProjectReader::handle_inst_basic(Project& project, const std::string& line) {
     static std::unordered_map<std::string, InstrumentFamily> inst_t_map = {
         {"INST2A03", INST_2A03},
         {"INSTVRC6", INST_VRC6},
@@ -200,8 +205,8 @@ void ProjectReader::handle_inst_basic(Project& project, const std::string& line,
     */
 
     std::stringstream ss(line);
-    std::string word;
-    ss >> word;
+    std::string tag;
+    ss >> tag;
 
     int index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut;
     ss >>index >> seq_vol >> seq_arp >> seq_pit >> seq_hpi >> seq_dut;
@@ -251,14 +256,14 @@ void ProjectReader::handle_inst_basic(Project& project, const std::string& line,
     project.instruments.insert( {index, std::move(inst) } );
 }
 
-void ProjectReader::handle_inst_vrc7( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_inst_vrc7( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int index, patch;
     std::vector<int> registers;
     registers.resize(8);
 
-    ss >> word;
+    ss >> tag;
     ss >> index >> patch;
     
     for (int i = 0; i < 8; ++i) {
@@ -279,15 +284,15 @@ void ProjectReader::handle_inst_vrc7( Project& project, const std::string& line,
     project.instruments.insert( {index, std::move(inst) } );
 }
 
-void ProjectReader::handle_inst_fds( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_inst_fds( Project& project, const std::string& line) {
     std::stringstream ss(line);
     
-    std::string word;
+    std::string tag;
     int index;
     bool mod_enable;
     int mod_speed, mod_depth, mod_delay;
 
-    ss >> word;
+    ss >> tag;
     ss >> index;
     ss >> mod_enable >> mod_speed >> mod_depth >> mod_delay;
     std::string name = get_quote(line);
@@ -304,12 +309,12 @@ void ProjectReader::handle_inst_fds( Project& project, const std::string& line, 
     project.instruments.insert( {index, std::move(inst) } );
 }
 
-void ProjectReader::handle_key_dpcm( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_key_dpcm( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int inst_idx, octave, note, sample, pitch, loop, loop_point, delta;
 
-    ss >> word;
+    ss >> tag;
     ss >> inst_idx >> octave >> note >> sample;
     ss >> pitch >> loop >> loop_point >> delta;
     
@@ -325,12 +330,12 @@ void ProjectReader::handle_key_dpcm( Project& project, const std::string& line, 
 }
 
 
-void ProjectReader::handle_fds_wave( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_fds_wave( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int inst_idx;
 
-    ss >> word >> inst_idx;
+    ss >> tag >> inst_idx;
     
     // check for existence of instrument
     auto it = project.instruments.find(inst_idx);
@@ -345,12 +350,12 @@ void ProjectReader::handle_fds_wave( Project& project, const std::string& line, 
     foundObject.fds_settings.fds_wave = std::move(numbers);
 }
 
-void ProjectReader::handle_fds_mod( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_fds_mod( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int inst_idx;
 
-    ss >> word >> inst_idx;
+    ss >> tag >> inst_idx;
     
     // check for existence of instrument
     auto it = project.instruments.find(inst_idx);
@@ -365,12 +370,12 @@ void ProjectReader::handle_fds_mod( Project& project, const std::string& line, [
     foundObject.fds_settings.fds_mod = std::move(numbers);
 }
 
-void ProjectReader::handle_fds_macro( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_fds_macro( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int inst_idx, type, loop, release, setting;
     
-    ss >> word;
+    ss >> tag;
     ss >> inst_idx >> type >> loop >> release >> setting;
     
     MacroType macro_t;
@@ -421,13 +426,13 @@ void ProjectReader::handle_fds_macro( Project& project, const std::string& line,
     project.macros.insert( {macro_key, fds_macro} ); 
 }
 
-void ProjectReader::handle_n163_wave( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_n163_wave( Project& project, const std::string& line) {
     std::stringstream ss(line);
-    std::string word;
+    std::string tag;
     int inst_idx;
     int wave_idx;
 
-    ss >> word >> inst_idx >> wave_idx;
+    ss >> tag >> inst_idx >> wave_idx;
 
     std::string text_after_colon = get_text_after_colon(line);
     std::vector<int> numbers = get_int_list(text_after_colon);
@@ -444,12 +449,12 @@ void ProjectReader::handle_n163_wave( Project& project, const std::string& line,
     std::cout << "[D] Assigned N163 wave to instrument: " << foundObject.name << std::endl;
 }
 
-void ProjectReader::handle_track( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
-    std::string word;
+void ProjectReader::handle_track( Project& project, const std::string& line) {
+    std::string tag;
     int num_rows, speed, tempo;
 
     std::stringstream ss(line);
-    ss >> word;
+    ss >> tag;
     ss >> num_rows >> speed >> tempo;
     std::string name = get_quote(line);
     
@@ -459,11 +464,7 @@ void ProjectReader::handle_track( Project& project, const std::string& line, [[m
     project.tracks.push_back(std::move(track));
 }
 
-void ProjectReader::handle_columns(
-    Project& project, 
-    const std::string& line, 
-    [[maybe_unused]] const std::string& tag
-) {
+void ProjectReader::handle_columns( Project& project, const std::string& line ) {
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process COLUMNS until a Track has been initialized." << std::endl;
         exit(1);
@@ -472,30 +473,30 @@ void ProjectReader::handle_columns(
     std::vector<int> numbers = get_int_list(text_after_colon);
     int num_cols = numbers.size();
 
-    Track& t = project.tracks.back();
-    t.num_cols = num_cols;
-    t.eff_cols = std::move(numbers);
+    Track& current_track = project.tracks.back();
+    current_track.num_cols = num_cols;
+    current_track.eff_cols = std::move(numbers);
 }
 
-void ProjectReader::handle_order( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_order( Project& project, const std::string& line) {
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process ORDER until a Track has been initialized." << std::endl;
         exit(1);
     }
     std::stringstream ss(line);
-    std::string word;
-    ss >> word;
-    ss >> word;
-    int order_idx = convert_hex_str_to_int(word);
+    std::string tag;
+    ss >> tag;
+    ss >> tag;
+    int order_idx = convert_hex_str_to_int(tag);
 
     std::string text_after_colon = get_text_after_colon(line);
     std::vector<int> numbers = get_hex_list(text_after_colon);
 
-    Track& t = project.tracks.back();
-    t.orders.insert( {order_idx, std::move(numbers) } );
+    Track& current_track = project.tracks.back();
+    current_track.orders.insert( {order_idx, std::move(numbers) } );
 }
 
-void ProjectReader::handle_pattern( [[maybe_unused]] Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_pattern( [[maybe_unused]] Project& project, const std::string& line) {
     /* 
     // Not actually a requirement for this TAG:
     
@@ -507,16 +508,16 @@ void ProjectReader::handle_pattern( [[maybe_unused]] Project& project, const std
     */
 
     std::stringstream ss(line);
-    std::string word;
-    ss >> word; // tag
-    ss >> word; // field but it is a string. need to convert it to int.
-    current_pattern = convert_hex_str_to_int(word);
+    std::string tag;
+    ss >> tag; // tag
+    ss >> tag; // field but it is a string. need to convert it to int.
+    current_pattern = convert_hex_str_to_int(tag);
 
     // Now current_pattern will be stored persistently.
     // This is important for handle_row() to add the token to the correct pattern.
 }
 
-void ProjectReader::handle_row( Project& project, const std::string& line, [[maybe_unused]] const std::string& tag) {
+void ProjectReader::handle_row( Project& project, const std::string& line) {
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process ROW until a Track has been initialized." << std::endl;
         exit(1);
@@ -524,11 +525,11 @@ void ProjectReader::handle_row( Project& project, const std::string& line, [[may
     Track& current_track = project.tracks.back();
 
     std::stringstream ss(line);
-    std::string word;
-    ss >> word;
-    ss >> word;
+    std::string tag, second_word;
+    ss >> tag;
+    ss >> tag;
 
-    int row_idx = convert_hex_str_to_int(word);
+    int row_idx = convert_hex_str_to_int(tag);
 
     std::vector<std::string> tokens = get_colon_fields(line);
     // std::cout << "[D] tokens.size = " << tokens.size() << std::endl;
@@ -545,29 +546,31 @@ void ProjectReader::handle_row( Project& project, const std::string& line, [[may
     }
 }
 
-void ProjectReader::process_line(Project& project, const std::string& line, const std::string& tag) {
+void ProjectReader::process_line(Project& project, const std::string& line) {
     // Process a Famitracker Line.
     // std::cout << "[D] LINE = " << line << std::endl;
 
+    std::stringstream ss(line);
+    std::string tag;
+    ss >> tag;
+
+    // Skip blank lines and comment lines.
+    if (tag.empty()) { return; }
+    if (tag[0] == '#') { return; }
+
     // Find correct Handler in dispatch table and call the method.
     auto it = dtable.find(tag);
-    if (it != dtable.end() && it->second != nullptr) 
-    {
+    if (it != dtable.end() && it->second != nullptr) {
         // std::cout << "[D] Dispatching tag: " << tag << std::endl;
         auto method = it->second;
-        
-        try 
-        {
-            // (this->*method)(p, line, tag);
-            it->second(project, line, tag);
+        try {
+            it->second(project, line);
         } 
-        catch (const std::exception& e) 
-        {
+        catch (const std::exception& e) {
             std::cerr << "[!] Exception in handler for tag " << tag << ": " << e.what() << std::endl;
         }
     } 
-    else 
-    {
+    else {
         std::cout << "[!] Tag not found or null handler: " << tag << std::endl;
     }
 }
@@ -586,20 +589,8 @@ void ProjectReader::execute(Project& project, const std::string& input_file) {
     }
 
     std::string line;
-
     while (std::getline(fh, line)) {
-        std::string word;
-        std::stringstream ss(line);
-        ss >> word;
-
-        // Skip blank lines and comment lines.
-        if (word.empty()) {
-            continue;
-        }
-        if (word[0] == '#') {
-            continue;
-        }
-        process_line(project, line, word);
+        process_line(project, line);
     }
 }
 
