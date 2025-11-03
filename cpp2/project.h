@@ -17,7 +17,7 @@ struct Project {
     
     std::unordered_map<std::string, Macro> macros;
     // std::unordered_map<int, DpcmSample> dpcm_samples;
-    // std::unordered_map<int, Instrument> instruments;
+    std::unordered_map<int, Instrument> instruments;
     // std::unordered_set<int, Groove> usergroove;
     std::vector<Track> tracks;
 

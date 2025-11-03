@@ -15,29 +15,65 @@
 #include "track.h"
 
 ProjectReader::ProjectReader() {
-    static std::unordered_set<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT", "COMMENT" };
-    static std::unordered_set<std::string> global_settings_tags = { "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS" };
-    static std::unordered_set<std::string> macro_tags = { "MACRO", "MACROVRC6", "MACRON163", "MACROS5B"};
+    static std::unordered_set<std::string> song_information_tags = {"TITLE", "AUTHOR", "COPYRIGHT", "COMMENT"};
+    static std::unordered_set<std::string> global_settings_tags = {"MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS"};
+    static std::unordered_set<std::string> macro_tags = {"MACRO", "MACROVRC6", "MACRON163", "MACROS5B"};
+    static std::unordered_set<std::string> basic_inst_tags = {"INST2A03", "INSTVRC6", "INSTN163", "INSTS5B"};
     
     // init dispatch table
     dtable.clear();
     
-    // register functions
+    // metadata handlers
     for (const auto& tag : song_information_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_song_information(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { 
+            handle_song_information(project, line, tag); 
+        };
     }
     for (const auto tag : global_settings_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_global_settings(project, line, tag); };
-    }
-    for (const auto tag : macro_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { handle_macro(project, line, tag); };
+        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { 
+            handle_global_settings(project, line, tag); 
+        };
     }
 
-    dtable["TRACK"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_track(project, line, tag); };
-    dtable["COLUMNS"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_columns(project, line, tag); };
-    dtable["ORDER"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_order(project, line, tag); };
-    dtable["PATTERN"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_pattern(project, line, tag); };
-    dtable["ROW"] = [this](Project& project, const std::string& line, const std::string& tag) { handle_row(project, line, tag); };
+    // macro handlers
+    for (const auto tag : macro_tags) {
+        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { 
+            handle_macro(project, line, tag); 
+        };
+    }
+    
+    // instrument handlers
+    for (const auto tag : basic_inst_tags) {
+        dtable[tag] = [this](Project& project, const std::string& line, const std::string& tag) { 
+            handle_inst_basic(project, line, tag); 
+        };
+    }
+    dtable["INSTVRC7"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_inst_vrc7(project, line, tag); 
+    };
+    dtable["INSTFDS"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_inst_fds(project, line, tag); 
+    };
+    
+    // special handlers 
+    // TODO
+
+    // track handlers
+    dtable["TRACK"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_track(project, line, tag); 
+    };
+    dtable["COLUMNS"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_columns(project, line, tag); 
+    };
+    dtable["ORDER"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_order(project, line, tag); 
+    };
+    dtable["PATTERN"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_pattern(project, line, tag); 
+    };
+    dtable["ROW"] = [this](Project& project, const std::string& line, const std::string& tag) { 
+        handle_row(project, line, tag); 
+    };
 }
 
 void ProjectReader::handle_song_information(Project& project, const std::string& line, const std::string& tag) {
@@ -99,9 +135,7 @@ void ProjectReader::handle_macro(Project& project, const std::string& line, cons
     
     std::string macro_key = generate_macro_key(inst_t, macro_t, index);
     
-    // TODO
-    // Macro m(inst_t, macro_t, index, loop, release, setting, std::move(sequence));
-    
+    /* 
     Macro m;
     m.inst_t = inst_t;
     m.macro_t = macro_t;
@@ -110,8 +144,136 @@ void ProjectReader::handle_macro(Project& project, const std::string& line, cons
     m.release = release;
     m.setting = setting; 
     m.sequence = std::move(sequence);
+    */
+    Macro m(inst_t, macro_t, index, loop, release, setting, std::move(sequence));
 
-    project.macros[macro_key] = m;
+    project.macros[macro_key] = std::move(m);
+}
+
+void ProjectReader::handle_inst_basic(Project& project, const std::string& line, const std::string& tag) {
+    static std::unordered_map<std::string, InstrumentFamily> inst_t_map = {
+        {"INST2A03", INST_2A03},
+        {"INSTVRC6", INST_VRC6},
+        {"INSTN163", INST_N163},
+        {"INSTS5B" , INST_S5B}
+    };
+
+    std::stringstream ss(line);
+    std::string word;
+    ss >> word;
+
+    int index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut;
+    ss >>index >> seq_vol >> seq_arp >> seq_pit >> seq_hpi >> seq_dut;
+
+    std::string name = get_quote(line);
+    
+    /*
+    Instrument inst; 
+    inst.family = INST_2A03;
+    inst.index = index;
+    inst.seq_vol = seq_vol;
+    inst.seq_arp = seq_arp;
+    inst.seq_pit = seq_pit;
+    inst.seq_hpi = seq_hpi;
+    inst.seq_dut = seq_dut;
+    inst.name = name;
+    */
+    
+    InstrumentFamily inst_t = inst_t_map[tag]; 
+
+    Instrument inst(inst_t, index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut, name);
+    
+    // assign special N163 settings
+    if (inst_t == INST_N163) {
+        int w_size, w_pos, w_count;
+        ss >> w_size >> w_pos >> w_count;
+        
+        inst.n163_settings.w_size = w_size;
+        inst.n163_settings.w_pos = w_pos;
+        inst.n163_settings.w_count = w_count;
+    }
+
+    // assign macros
+    struct Zip {
+        MacroType macro_t;
+        int macro_idx;
+        std::optional<Macro>* macro_ptr;
+    };
+
+    std::vector<Zip> fields {
+        {VOL, seq_vol, &inst.mac_vol},
+        {ARP, seq_arp, &inst.mac_arp},
+        {PIT, seq_pit, &inst.mac_pit},
+        {HPI, seq_hpi, &inst.mac_hpi},
+        {DUT, seq_dut, &inst.mac_dut}
+    };
+    
+    for (const auto& field : fields) {
+        std::string macro_key = generate_macro_key(inst_t, field.macro_t, field.macro_idx);
+        
+        auto it = project.macros.find(macro_key);
+        if (it != project.macros.end() ) {
+            // std::cout << "[D] Found macro: " << macro_key << std::endl;
+            *field.macro_ptr = (it->second);
+        }
+    }
+    
+    // std::cout << "[D] Instrument added : " << inst.index << ": '" << inst.name << "'\n";
+    project.instruments[index] = std::move(inst);
+}
+
+
+void ProjectReader::handle_inst_vrc7(Project& project, const std::string& line, const std::string& tag) {
+    std::stringstream ss(line);
+    std::string word;
+    int index, patch;
+    std::vector<int> registers;
+    registers.resize(8);
+
+    ss >> word;
+    ss >> index >> patch;
+    
+    for (int i = 0; i < 8; ++i) {
+        std::string hex_num;
+        ss >> hex_num;
+        int num = convert_hex_str_to_int(hex_num);
+        registers.push_back(num);
+    }
+
+    std::string name = get_quote(line);
+
+    InstrumentFamily inst_t = INST_VRC7;
+    Instrument inst(inst_t, index, -1, -1, -1, -1, -1, name);
+    inst.vrc7_settings.patch = patch;
+    inst.vrc7_settings.registers = std::move(registers);
+    
+    // std::cout << "[D] VRC7 Instrument added : " << inst.index << ": '" << inst.name << "'\n";
+    project.instruments[index] = std::move(inst);
+}
+
+void ProjectReader::handle_inst_fds(Project& project, const std::string& line, const std::string& tag) {
+    std::stringstream ss(line);
+    
+    std::string word;
+    int index;
+    bool mod_enable;
+    int mod_speed, mod_depth, mod_delay;
+
+    ss >> word;
+    ss >> index;
+    ss >> mod_enable >> mod_speed >> mod_depth >> mod_delay;
+    std::string name = get_quote(line);
+
+    InstrumentFamily inst_t = INST_FDS;
+    Instrument inst(inst_t, index, -1, -1, -1, -1, -1, name);
+    
+    inst.fds_settings.mod_enable = mod_enable;
+    inst.fds_settings.mod_speed = mod_speed;
+    inst.fds_settings.mod_depth = mod_depth;
+    inst.fds_settings.mod_delay = mod_delay;
+
+    // std::cout << "[D] FDS Instrument added : " << inst.index << ": '" << inst.name << "'\n";
+    project.instruments[index] = std::move(inst);
 }
 
 void ProjectReader::handle_track(Project& project, const std::string& line, const std::string& tag) {
@@ -219,6 +381,7 @@ void ProjectReader::process_line(Project& project, const std::string& line, cons
 
 void ProjectReader::execute(Project& project, const std::string& input_file) {
     // Main method to call. Entry point to read input_file data into Project.
+    std::cout << "[D] Reading project ..." << std::endl;
 
     std::ifstream fh(input_file);
     if (!fh.is_open()) {

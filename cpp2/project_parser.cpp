@@ -7,5 +7,5 @@
 
 void ProjectParser::execute(Project& p) 
 {
-    std::cout << "Parsing project ... " << std::endl;
+    std::cout << "[D] Parsing project ... " << std::endl;
 }

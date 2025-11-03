@@ -17,6 +17,9 @@ private:
     void handle_global_settings(Project& project, const std::string& line, const std::string& tag);
     
     void handle_macro(Project& project, const std::string& line, const std::string& tag);
+    void handle_inst_basic(Project& project, const std::string& line, const std::string& tag);
+    void handle_inst_vrc7(Project& project, const std::string& line, const std::string& tag);
+    void handle_inst_fds(Project& project, const std::string& line, const std::string& tag);
     
     void handle_track(Project& project, const std::string& line, const std::string& tag);
     void handle_columns(Project& project, const std::string& line, const std::string& tag);

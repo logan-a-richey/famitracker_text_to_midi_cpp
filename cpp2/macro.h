@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <string>
+#include <cstdint>
 
 #include "constants.h"
 
@@ -12,22 +13,27 @@ struct Macro {
     MacroType macro_t;
     int index, loop, release, setting;
     std::vector<int> sequence;
-    
-public:
-    /*
-    // ctor
-    Macro() = delete;
-    Macro( 
-        InstrumentFamily inst_t_, 
-        MacroType macro_t_, 
-        int index_, 
-        int loop_, 
-        int release_, 
-        int setting_, 
-        std::vector<int> sequence_
-    );
-    */
 
-    std::string to_str() const;
+    // Ctor
+    Macro() = default;
+    
+    // Ctor2
+    Macro(
+        InstrumentFamily m_inst_t,
+        MacroType m_macro_t,
+        int m_index, 
+        int m_loop, 
+        int m_release, 
+        int m_setting,
+        const std::vector<int>& m_sequence
+    ) : 
+         inst_t(m_inst_t),
+         macro_t(m_macro_t),
+         index(m_index), 
+         loop(m_loop), 
+         release(m_release), 
+         setting(m_setting),
+         sequence(m_sequence) { /* */
+    }
 };
 

@@ -12,19 +12,19 @@
 #include "constants.h"
 
 struct FDS_Properties {
-    bool fds_mod_enable;
-    int fds_mod_speed, fds_mod_depth, fds_mod_delay;
+    bool mod_enable;
+    int mod_speed, mod_depth, mod_delay;
     std::vector<int> fds_wave, fds_mod;
 };
 
 struct N163_Properties {
-    int n163_w_size, n163_w_pos, n163_w_count;
+    int w_size, w_pos, w_count;
     std::unordered_map<int, std::vector<int>> n163_wave_table;
 };
 
 struct VRC7_Properties {
-    int vrc7_patch;
-    std::vector<int> vrc7_registers;
+    int patch;
+    std::vector<int> registers;
 };
 
 struct Instrument {
@@ -41,6 +41,30 @@ struct Instrument {
     FDS_Properties fds_settings;
     N163_Properties n163_settings;
     VRC7_Properties vrc7_settings;
+
+    // Ctor
+    Instrument() = default;
+    
+    // Ctor2  
+    Instrument(
+        InstrumentFamily m_family,
+        int m_index, 
+        int m_seq_vol, 
+        int m_seq_arp, 
+        int m_seq_pit, 
+        int m_seq_hpi, 
+        int m_seq_dut,
+        const std::string& m_name
+    ) :
+        family(m_family),
+        index(m_index),
+        seq_vol(m_seq_vol),
+        seq_arp(m_seq_arp),
+        seq_pit(m_seq_pit),
+        seq_hpi(m_seq_hpi),
+        seq_dut(m_seq_dut),
+        name(m_name) { /* */ 
+    }
 };
 
 

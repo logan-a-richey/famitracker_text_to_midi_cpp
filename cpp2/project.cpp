@@ -33,7 +33,10 @@ std::string Project::to_str() const {
         oss << "'" << x.first << "'" << ": " << vector_to_string(x.second.sequence) << "\n";
     }
 
-    // oss << "\n--- Instruments ---\n";
+    oss << "\n--- Instruments ---\n";
+    for (const auto& x : instruments) {
+        oss << x.first << ": '" << x.second.name << "'\n";
+    }
      
     oss << "\n--- Tracks ---\n";
     for (size_t i = 0; i < tracks.size(); ++i) {

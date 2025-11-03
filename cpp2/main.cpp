@@ -31,7 +31,7 @@ int main(int argc, char** argv)
     pp.execute(p);
     pe.execute(p, output_dir);
     
-    std::cout << "[D] Printing Project: \n" << p.to_str() << std::endl;
+    std::cout << "\n[D] Printing Project: \n" << p.to_str() << std::endl;
 
     return 0;
 }

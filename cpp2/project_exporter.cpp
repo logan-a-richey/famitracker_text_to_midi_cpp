@@ -7,5 +7,5 @@
 
 void ProjectExporter::execute(const Project&, const std::string& output_dir) 
 {
-    std::cout << "Exporting project ..." << std::endl;
+    std::cout << "[D] Exporting project ..." << std::endl;
 }
