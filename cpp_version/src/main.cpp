@@ -1,36 +1,37 @@
-// famitracker converter
+// main.cpp
+
+#include "project.h"
+#include "project_reader.h"
+#include "project_parser.h"
+#include "project_exporter.h"
 
 #include <iostream>
 #include <string>
 
-#include "project_reader.h"
-#include "project.h"
-#include "utils.hpp"
-
-int main(int argc, char** argv) {
-
-    // check for cmdline args
+int main(int argc, char** argv) 
+{
+    // get input file
     if (argc < 2) {
-        std::cerr << "[Usage] ./main <input_file.txt>" << std::endl;
+        std::cerr << "[Usage Error] ./main.exe <input.txt<" << std::endl;
         exit(1);
     }
-    
-    const std::string input_file = argv[1];
-    
-    Project project;
-    ProjectReader project_reader;
-    
-    // parse the input file
-    project_reader.read_project(input_file, project);
-    
-    project.display();
 
-    // TODO sort project data
-    // TODO export project data
+    std::string input_file = argv[1];
+    std::string output_dir = "output";
 
-    std::cout << "Macro labels: " << std::endl;
-    for (const auto& pair : project.macros) {
-        std::cout << pair.first << ": " << vector_to_string(pair.second.sequence) << std::endl;
-    }
+    // init data structures
+    Project p;
+    ProjectReader pr;
+    ProjectParser pp;
+    ProjectExporter pe;
+    // MidiWriter mw;
+
+    // process file
+    pr.execute(p, input_file);
+    pp.execute(p);
+    pe.execute(p, output_dir);
+    
+    std::cout << "\n[D] Printing Project: \n" << p.to_str() << std::endl;
+
     return 0;
 }

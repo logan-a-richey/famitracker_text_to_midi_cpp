@@ -19,7 +19,7 @@ Track::Track(std::string name_, int num_rows_, int speed_, int tempo_) {
     
     num_cols = 5;
     eff_cols.resize(num_cols);
-    for (size_t i = 0; i < num_cols; ++i) {
+    for (int i = 0; i < num_cols; ++i) {
         eff_cols[i] = 1;
     }
 }

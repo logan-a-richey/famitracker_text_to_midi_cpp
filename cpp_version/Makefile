@@ -4,12 +4,12 @@ CXXFLAGS = -Wall -Wextra -std=c++17 -Iinclude
 
 # Directories
 SRCDIR = src
-INCDIR = include
+INCDIR = src # NOTE this is temporary - will move h files into include/
 BINDIR = bin
 OBJDIR = obj
 
 # Target executable name
-TARGET = ftm_txt2mid.exe
+TARGET = ftm2mid.exe
 
 # Find all .cpp files and map them to .o files in obj/
 SOURCES = $(wildcard $(SRCDIR)/*.cpp)

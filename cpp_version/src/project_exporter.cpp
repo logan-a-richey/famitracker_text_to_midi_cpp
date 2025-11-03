@@ -5,7 +5,9 @@
 #include "project_exporter.h"
 #include "project.h"
 
-void ProjectExporter::execute(const Project&, const std::string& output_dir) 
-{
+void ProjectExporter::execute(
+    [[maybe_unused]] const Project&, 
+    [[maybe_unused]] const std::string& output_dir
+) {
     std::cout << "[D] Exporting project ..." << std::endl;
 }

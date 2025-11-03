@@ -5,7 +5,8 @@
 #include "project_parser.h"
 #include "project.h"
 
-void ProjectParser::execute(Project& p) 
-{
+void ProjectParser::execute(
+    [[maybe_unused]] Project& p
+) {
     std::cout << "[D] Parsing project ... " << std::endl;
 }

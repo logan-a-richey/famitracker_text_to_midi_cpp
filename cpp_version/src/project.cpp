@@ -1,35 +1,48 @@
 // project.cpp
 
 #include "project.h"
+#include "container_printing.hpp"
 
-#include <iostream>
 #include <string>
-#include <vector>
-#include <map>
+#include <sstream>
 
-void Project::display() {
-    std::cout << "\n===== Displaying Project =====\n";
-    std::cout << "--- Song Information ---\n";
-    std::cout << "title: " << title << "\n";
-    std::cout << "author: " << author << "\n";
-    std::cout << "copyright: " << copyright << "\n";
-
-    std::cout << "\n--- Comments ---\n";
-    for (const auto& c : comments) {
-        std::cout << c << "\n";
+std::string Project::to_str() const {
+    std::ostringstream oss;
+    oss << "--- Song Information ---\n";
+    oss << "title: " << title << "\n";
+    oss << "author: " << author << "\n";
+    oss << "copyright: " << copyright << "\n";
+    
+    if (!comments.empty()) {
+        oss << "\n--- Comments ---\n";
+        for (const auto& x : comments) {
+            oss << x << "\n";
+        }
     }
-    
-    std::cout << "\n--- Global Settings ---\n";
-    std::cout << "machine: " << machine << "\n";
-    std::cout << "framerate: " << framerate << "\n";
-    std::cout << "expansion: " << expansion << "\n";
-    std::cout << "vibrato: " << vibrato << "\n";
-    std::cout << "split: " << split << "\n";
-    std::cout << "n163channels: " << n163channels << "\n";
-    
-    std::cout << "\n--- Macros ---\n";
 
-    std::cout << "\n--- Instruments ---\n";
+    oss << "\n--- Global Settings ---\n";
+    oss << "machine: " << machine << "\n";
+    oss << "framerate: " << framerate << "\n";
+    oss << "expansion: " << expansion << "\n";
+    oss << "vibrato: " << vibrato << "\n";
+    oss << "split: " << split << "\n";
+    oss << "n163channels: " << n163channels << "\n";
+    
+    oss << "\n--- Macros ---\n";
+    for (const auto& x : macros) {
+        oss << "'" << x.first << "'" << ": " << vector_to_string(x.second.sequence) << "\n";
+    }
 
-    std::cout << "\n--- Tracks ---\n";
+    oss << "\n--- Instruments ---\n";
+    for (const auto& x : instruments) {
+        oss << x.first << ": '" << x.second.name << "'\n";
+    }
+     
+    oss << "\n--- Tracks ---\n";
+    for (size_t i = 0; i < tracks.size(); ++i) {
+        oss << "Track " << i << ": " << "'" << tracks[i].name << "'" << "\n";
+    }
+
+    return oss.str();
 }
+
