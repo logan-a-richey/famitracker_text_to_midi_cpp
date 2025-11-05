@@ -190,7 +190,8 @@ std::string ProjectParser::handle_echo_buffer( const std::string& token, [[maybe
     return token;
 }
 
-control_flow_t ProjectParser::handle_control_flow(const std::string& line, const Track& track) {
+control_flow_t ProjectParser::handle_control_flow(const std::string& line, const Track& track) 
+{
     /* 
         Scan for CXX, BXX, and DXX order skipping effects within a FamiTracker row.
         CXX stops the song. We simply return and the song stops. Since current target_order has not changed, seen_it will trigger and exit the while loop.
@@ -220,7 +221,6 @@ control_flow_t ProjectParser::handle_control_flow(const std::string& line, const
         }
 
         if (!last_match.empty()) {
-            // int bxx_value = std::stoi(last_match.substr(1), nullptr, 16);
             int bxx_value = convert_hex_str_to_int(last_match.substr(1));
 
             if (std::find(sorted_order_keys.begin(), sorted_order_keys.end(), bxx_value) == sorted_order_keys.end()) {
@@ -247,7 +247,6 @@ control_flow_t ProjectParser::handle_control_flow(const std::string& line, const
         }
 
         if (!last_match.empty()) {
-            // int dxx_value = std::stoi(last_match.substr(1), nullptr, 16);
             int dxx_value = convert_hex_str_to_int(last_match.substr(1));
 
             // Clamp to [0, track.num_rows - 1]
@@ -268,4 +267,21 @@ control_flow_t ProjectParser::handle_control_flow(const std::string& line, const
 
     return SKIP_NONE;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

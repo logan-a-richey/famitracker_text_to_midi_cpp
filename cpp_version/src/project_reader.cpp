@@ -23,8 +23,16 @@
 #include "key_gen.h"
 // #include "container_printing.hpp"
 
-// Ctor and Init Dtable
 ProjectReader::ProjectReader() {
+    /*
+    ProjectReader constructor
+    Initialize ProjectReader helper class.
+    Sets up dispatch table `dtable` by inserting std::pair<std::string, lambda function>
+    The lambda function has a signature of void(ProjectReader::*)(Project&, const std::string&), where  Project& is a mutable reference.
+    While parsing the data, we keep track of the persistent variables `current_dpcm_idx` and `current_pattern` that get set on their respective lines.
+    [this] binds the function pointer to the ProjectReader class namepsace by virtue of std::function.
+    */
+
     static std::list<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT", "COMMENT" };
     static std::list<std::string> global_settings_tags = { "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS" };
     static std::list<std::string> macro_tags = { "MACRO", "MACROVRC6", "MACRON163", "MACROS5B" };
@@ -76,12 +84,29 @@ ProjectReader::ProjectReader() {
     dtable.insert({"ROW", [this](Project& project, const std::string& line) { handle_row(project, line); }});
 }
 
-// Dtor
 ProjectReader::~ProjectReader() {
+    /*
+    ProjectReader destructor.
+    Explicitly call the clear method on the dtable.
+    */
+
     dtable.clear();
 }
 
 void ProjectReader::handle_song_information(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    TITLE [title]
+        - title: string - the document's title
+    AUTHOR [author]
+        - author: string - the document's author
+    COPYRIGHT [copyright]
+        - copyright: string - the document's copyright information
+    COMMENT [comment]
+        - comment: string - line of text to add
+    */
+
     std::stringstream ss(line);
     std::string tag;
     ss >> tag;
@@ -90,7 +115,7 @@ void ProjectReader::handle_song_information(Project& project, const std::string&
 
     if (value.empty()) { return; }
 
-    if (tag == "TITLE") { project.title = value;    }
+    if (tag == "TITLE") { project.title = value; }
     else if (tag == "AUTHOR") { project.author = value; }
     else if (tag == "COPYRIGHT") { project.copyright = value; }
     else if (tag == "COMMENT") { project.comments.push_back(value); }
@@ -98,8 +123,23 @@ void ProjectReader::handle_song_information(Project& project, const std::string&
 }
 
 void ProjectReader::handle_global_settings(Project& project, const std::string& line) {
-    // TODO use regex to get the number value
+    /*
+    Handle a line with format:
     
+    MACHINE [machine]
+        - machine: int[0,1] - 0 for NTSC, 1 for PAL
+    FRAMERATE [fps]
+        - fps: int[0,800] - music framerate, 0 for machine default
+    EXPANSION [chips]
+        - chips: int[0,255] - bitfield representing expansion chips used: 1=VRC6, 2=VRC7, 4=FDS, 8=MMC5, 16=N163, 32=S5B
+    VIBRATO [mode]
+        - mode: int[0,1] - 0 for old style vibrato, 1 for new style
+    SPLIT [split]
+        - split: int[0,255] - split point where Fxx effect sets tempo instead of speed
+    N163CHANNELS [channels]
+        - channels: int[1,8] - channels used by N163 expansion
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int value;
@@ -117,6 +157,20 @@ void ProjectReader::handle_global_settings(Project& project, const std::string& 
 }
 
 void ProjectReader::handle_macro(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    MACRO [type] [index] [loop] [release] [setting] : [macro]
+        # Defines a macro sequence for a 2A03 instrument.
+        - type: int[0,4] - 0=volume, 1=arpeggio, 2=pitch, 3=hi-pitch, 4=duty
+        - index: int[0,127] - index of the macro
+        - loop: int[-1,253] - loop point, -1 for no loop
+        - release: int[-1,253] - release point, -1 for no release
+        - setting: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative, 3=scheme)
+        - macro: int_list[-128,127] - macro sequence
+    */
+
+    // For fast string to constant lookup
     static std::unordered_map<std::string, InstrumentFamily> inst_t_map = {
         {"MACRO", INST_2A03},
         {"MACROVRC6", INST_VRC6},
@@ -149,6 +203,16 @@ void ProjectReader::handle_macro(Project& project, const std::string& line) {
 
 
 void ProjectReader::handle_dpcm_def(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    DPCMDEF [index] [size] [name]
+        # Creates a DPCM sample of the specified size in bytes. Use the DPCM command to fill in the sample data.
+        - index: int[0,63] - index of the sample
+        - size: int[0,4081] - size in bytes to allocate for the sample
+        - name: string - original filename of sample
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int dpcm_idx, sample_size;
@@ -162,6 +226,16 @@ void ProjectReader::handle_dpcm_def(Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_dpcm_data(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    DPCM : [data]
+        # Fills in sample data for the sample defined by the last DPCMDEF command.
+        # The data list may be of any length as long as it does not exceed the allocated sample length.
+        # Multiple DPCM commands will resume filling the sample where the previous one left off.
+        - data: hex_list[00,FF] - contents of the sample
+    */
+
     auto it = project.dpcm_samples.find(current_dpcm_idx);
     if (it == project.dpcm_samples.end() ) {
         return;
@@ -177,6 +251,16 @@ void ProjectReader::handle_dpcm_data(Project& project, const std::string& line) 
 }
 
 void ProjectReader::handle_groove(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    GROOVE [index] [sizeof] : [groove_sequence]
+        - index: int[0,63] - integer representing the groove number. default groove is the first in groove_list.
+        - sizeof: int[0,63] - len of groove_sequence
+        - groove_sequence: int_list[0,255] - represents speed change per row.
+        - (e.g.) list = [4,3,3,3] simulates F04 F03 F03 F03 on each row. Loop groove_sequence until otherwise specified.
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int idx, size;
@@ -190,6 +274,13 @@ void ProjectReader::handle_groove(Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_use_groove(Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+    
+    USEGROOVE : []
+        - tracks: int_list[0,63] - tells the project which tracks use the default groove
+    */
+    
     std::string text_after_colon = get_text_after_colon(line);
     std::vector<int> nums = get_int_list(text_after_colon);
     for (const auto& num : nums) {
@@ -198,17 +289,47 @@ void ProjectReader::handle_use_groove(Project& project, const std::string& line)
 }
 
 void ProjectReader::handle_inst_basic(Project& project, const std::string& line) {
+    /*
+    Handle a line in format:
+
+    <INST> [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_dut] [name]
+        # Defines a 2A03 instrument. To add DPCM sample key mappings, use the KEYDPCM command.
+        # Use the MACRO command to define sequences for use with 2A03 instruments.
+        # INST can be INST2A03, INSTVRC6, or INSTS5B. 
+        # Note that MMC5 appears identical to 2A03.
+        - index: int[0,63] - index of the instrument
+        - seq_vol: int[-1,127] - volume macro sequence, -1 for none
+        - seq_arp: int[-1,127] - arpeggio macro sequence, -1 for none
+        - seq_pit: int[-1,127] - pitch macro sequence, -1 for none
+        - seq_hpi: int[-1,127] - hi-pitch macro sequence, -1 for none
+        - seq_dut: int[-1,127] - duty macro sequence, -1 for none
+        - name: string - name of the instrument
+
+    If the instruent is INSTN163, we do all of the same steps with the addition of the 3 extra fields:
+
+    INSTN163 [index] [seq_vol] [seq_arp] [seq_pit] [seq_hpi] [seq_wav] [w_size] [w_pos] [w_count] [name]
+        # Defines a Namco 163 instrument. Use the MACRON163 command to define sequences for use with N163 instruments.
+        - index: int[0,63] - index of the instrument
+        - seq_vol: int[-1,127] - volume macro sequence, -1 for none
+        - seq_arp: int[-1,127] - arpeggio macro sequence, -1 for none
+        - seq_pit: int[-1,127] - pitch macro sequence, -1 for none
+        - seq_hpi: int[-1,127] - hi-pitch macro sequence, -1 for none
+        - seq_wav: int[-1,127] - wave macro sequence, -1 for none
+        - w_size: int[0,32] - wave length
+        - w_pos: int[0,127] - wave memory position
+        - w_count: int[0,16] - number of waves
+        - name: string - name of the instrument
+
+    Thus, we can handle 4 of the 6 instrument types with this one function.
+    */
+
+    // define a map for quick string to constant look-up
     static std::unordered_map<std::string, InstrumentFamily> inst_t_map = {
         {"INST2A03", INST_2A03},
         {"INSTVRC6", INST_VRC6},
         {"INSTN163", INST_N163},
         {"INSTS5B" , INST_S5B}
     };
-
-    /* TODO - DEBUG : floating point segfault error?
-    std::cout << "[D] skipping inst basic for floating point error" << std::endl;
-    return;
-    */
 
     std::stringstream ss(line);
     std::string tag;
@@ -223,7 +344,7 @@ void ProjectReader::handle_inst_basic(Project& project, const std::string& line)
 
     Instrument inst(inst_t, index, seq_vol, seq_arp, seq_pit, seq_hpi, seq_dut, name);
     
-    // assign special N163 settings
+    // Assign special N163 settings
     if (inst_t == INST_N163) {
         int w_size, w_pos, w_count;
         ss >> w_size >> w_pos >> w_count;
@@ -233,14 +354,14 @@ void ProjectReader::handle_inst_basic(Project& project, const std::string& line)
         inst.n163_settings.w_count = w_count;
     }
 
-    // assign macros
-    struct Zip {
+    // Assign macros
+    struct MacroField {
         MacroType macro_t;
         int macro_idx;
         std::optional<Macro>* macro_ptr;
     };
 
-    std::vector<Zip> fields {
+    std::vector<MacroField> fields {
         {VOL, seq_vol, &inst.mac_vol},
         {ARP, seq_arp, &inst.mac_arp},
         {PIT, seq_pit, &inst.mac_pit},
@@ -263,6 +384,17 @@ void ProjectReader::handle_inst_basic(Project& project, const std::string& line)
 }
 
 void ProjectReader::handle_inst_vrc7( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    INSTVRC7 [index] [patch] [r0] [r1] [r2] [r3] [r4] [r5] [r6] [r7] [name]
+        # Defines a VRC7 instrument.
+        - index: int[0,63] - index of the instrument
+        - patch: int[0,15] - VRC7 patch used by the instrument
+        - register: hex_list[00,FF] - custom patch register data
+        - name: string - name of the instrument
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int index, patch;
@@ -291,6 +423,20 @@ void ProjectReader::handle_inst_vrc7( Project& project, const std::string& line)
 }
 
 void ProjectReader::handle_inst_fds( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    INSTFDS [index] [mod_enable] [mod_speed] [mod_depth] [mod_delay] [name]
+        # Defines an FDS instrument.
+        # Use the commands FDSWAVE, FDSMOD, and FDSMACRO to fill in the waveform, modulation table, and macro data for the FDS instrument.
+        - index: int[0,63] - index of the instrument
+        - mod_enable: int[0,1] - 0 for modulator disabled, 1 for enabled
+        - mod_speed: int[0,4905] - modulator speed
+        - mod_depth: int[0,63] - modulator depth
+        - mod_delay: int[0,255] - modulator delay
+        - name: string - name of the instrument
+    */
+    
     std::stringstream ss(line);
     
     std::string tag;
@@ -316,6 +462,22 @@ void ProjectReader::handle_inst_fds( Project& project, const std::string& line) 
 }
 
 void ProjectReader::handle_key_dpcm( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    KEYDPCM [inst] [octave] [note] [sample] [pitch] [loop] [loop_point] [delta]
+        # Adds a DPCM sample mapping to a key in a 2A03 instrument.
+        # Use the INST2A03 command to define the instrument before attempting to add a key mapping.
+        - inst: int[0,63] - index of the instrument
+        - octave: int[0,7] - octave of key
+        - note: int[0,11] - scale note of key
+        - sample: int[0,63] - index of the sample to play
+        - pitch: int[0,15] - pitch of the sample
+        - loop: int[0,1] - 0 for no loop, 1 for loop
+        - loop_point: int[0,255] - loop point of the sample (32 byte increments)
+        - delta: int[-1,127] - delta counter value, -1 for off
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int inst_idx, octave, note, sample, pitch, loop, loop_point, delta;
@@ -337,6 +499,16 @@ void ProjectReader::handle_key_dpcm( Project& project, const std::string& line) 
 
 
 void ProjectReader::handle_fds_wave( Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    FDSWAVE [inst] : [data]
+        # Defines a waveform for an FDS instrument.
+        # Use the INSTFDS command to define the instrument before attempting to define its waveform.
+        - inst: int[0,63] - index of the instrument
+        - data: int_list[0,63] - contents of the waveform, must be 64 elements long
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int inst_idx;
@@ -357,6 +529,16 @@ void ProjectReader::handle_fds_wave( Project& project, const std::string& line) 
 }
 
 void ProjectReader::handle_fds_mod( Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+    
+    FDSMOD [inst] : [data]
+        # Defines a modulator table for an FDS instrument.
+        # Use the INSTFDS command to define the instrument before attempting to define its mod table.
+        - inst: int[0,63] - index of the instrument
+        - data: int_list[0,7] - contents of the table, must be 32 elements long
+    */
+    
     std::stringstream ss(line);
     std::string tag;
     int inst_idx;
@@ -377,6 +559,20 @@ void ProjectReader::handle_fds_mod( Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_fds_macro( Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    FDSMACRO [inst] [type] [loop] [release] [setting] : [macro]
+        # Defines a macro sequence for an FDS instrument.
+        # Use the INSTFDS command to define the instrument before attempting to define its macros.
+        - inst: int[0,63] - index of the instrument
+        - type: int[0,2] - 0=volume, 1=arpeggio, 2=pitch
+        - loop: int[-1,253] - loop point, -1 for no loop
+        - release: int[-1,253] - release point, -1 for no release
+        - setting: int[0,255] - macro setting (for arpeggio: 0=absolute, 1=fixed, 2=relative)
+        - macro: int_list[-128,127] - macro sequence
+    */
+
     std::stringstream ss(line);
     std::string tag;
     int inst_idx, type, loop, release, setting;
@@ -433,6 +629,17 @@ void ProjectReader::handle_fds_macro( Project& project, const std::string& line)
 }
 
 void ProjectReader::handle_n163_wave( Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    N163WAVE [inst] [wave] : [data]
+        # Defines a waveform for a Namco 163 instrument.
+        # Use the INSTN163 command to define the instrument before attempting to define its waveforms.
+        - inst: int[0,63] - index of the instrument
+        - wave: int[0,15] - index of the wave
+        - data: int_list[0,15] - contents of the waveform, must be the same length as defined by the INSTN163 instrument
+    */
+    
     std::stringstream ss(line);
     std::string tag;
     int inst_idx;
@@ -456,6 +663,17 @@ void ProjectReader::handle_n163_wave( Project& project, const std::string& line)
 }
 
 void ProjectReader::handle_track( Project& project, const std::string& line) {
+    /*
+    Handle a line with format:
+
+    TRACK [pattern] [speed] [tempo] [name]
+        # Begins a new track.
+        - pattern: int[0,256] - length of patterns
+        - speed: int[0,255] - track speed
+        - tempo: int[0,255] - track tempo
+        - name: string - name of the track
+    */
+
     std::string tag;
     int num_rows, speed, tempo;
 
@@ -471,6 +689,16 @@ void ProjectReader::handle_track( Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_columns( Project& project, const std::string& line ) {
+    /*
+    Handle a line with format:
+
+    COLUMNS : [columns]
+        # Sets the number of effect columns in each channel.
+        # This should be specified after a TRACK command, and before using ROW commands to fill in pattern data.
+        # If not specified, each channel will have the default number of effect columns (1).
+        - columns: int_list[1,64] - number of effect columns for each channel, where x is number of cols designated by EXPANSION.
+    */
+
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process COLUMNS until a Track has been initialized." << std::endl;
         exit(1);
@@ -485,6 +713,15 @@ void ProjectReader::handle_columns( Project& project, const std::string& line ) 
 }
 
 void ProjectReader::handle_order( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    ORDER [frame] : [list]
+        # Sets the patterns to be played in each frame. Applies to current track.
+        - frame: hex[00,7F] - index of frame
+        - list: hex_list[00,7F] - pattern to use for each channel, len of list must match number of cols
+    */
+
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process ORDER until a Track has been initialized." << std::endl;
         exit(1);
@@ -503,6 +740,14 @@ void ProjectReader::handle_order( Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_pattern( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    PATTERN [pattern]
+        # Sets the current pattern to be filled by subsequent ROW commands.
+        - pattern: hex[00,7F] - index of pattern
+    */
+
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process PATTERN until a Track has been initialized." << std::endl;
         exit(1);
@@ -520,6 +765,38 @@ void ProjectReader::handle_pattern( Project& project, const std::string& line) {
 }
 
 void ProjectReader::handle_row( Project& project, const std::string& line) {
+    /*
+    Handle line with format:
+
+    ROW [row] : [c0] : [c1] : [c2] ...
+        - row: string - contains music data
+    ROW DATA:
+    row: 
+        - hex[00,7F] - index of pattern
+    c0: 
+        - channel data for each channel. 
+        - The channel data looks like: nnn ii v eee
+    nnn: note,
+        - begins with a letter (C,D,E,F,G,A,B),
+        - then a sharp (#,+) natural (-,.) or flat (b,f) character,
+        - then an octave (0,1,2,3,4,5,6,7);
+        - an empty note is "...",
+        = a halt is "---",
+        - a release is "===";
+        - the notes for the noise channel c3 are special:
+        - they begin with a hex[0,F] to specify noise pitch, followed by "-#"
+    ii: 
+        - hex[00,3F] - instrument index, 
+        - ".." for none.
+    v: 
+        - hex[0,F] - volume, 
+        - "." for none.
+    eee: 
+        - effect, begins with a letter or number specifying the effect type,
+        - then the last two characters are hex[00,FF] specifying the parameter value.
+        - There must be as many eee fields as specified by the COLUMNS command.
+    */
+    
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process ROW until a Track has been initialized." << std::endl;
         exit(1);
@@ -533,36 +810,35 @@ void ProjectReader::handle_row( Project& project, const std::string& line) {
 
     int row_idx = convert_hex_str_to_int(tag);
 
-    // asdf : aaa : bbb : ccc 
-    // we want: {"aaa", "bbb", "ccc"}
     std::vector<std::string> tokens = get_colon_fields(line);
-    // std::cout << "[D] tokens.size = " << tokens.size() << std::endl;
 
     // Add tokens
     for (size_t i = 0; i < tokens.size(); ++i) {
         if (contains_only_spaces_and_periods(tokens[i])) {
-            // std::cout << "Skipping token: " << tokens[i] << std::endl;
             continue;
         }
         std::string token_key = generate_token_key(current_pattern, row_idx, i);
         current_track.tokens.insert( {token_key, tokens[i]} );
-        // current_track.tokens.insert( std::pair<std::string, std::string>(token_key, tokens[i]) );
-
-        // std::cout << "[D] Added item: key='" << token_key << "', val='" << tokens[i] << "'" << std::endl;
     }
 }
 
 void ProjectReader::process_line(Project& project, const std::string& line) {
-    // Process a Famitracker Line.
-    // std::cout << "[D] LINE = " << line << std::endl;
+    /*
+    Process a single line from the FamiTracker text file.
+    Calls the right function handler.
+    */
 
     std::stringstream ss(line);
     std::string tag;
     ss >> tag;
 
     // Skip blank lines and comment lines.
-    if (tag.empty()) { return; }
-    if (tag[0] == '#') { return; }
+    if (tag.empty()) { 
+        return; 
+    }
+    if (tag[0] == '#') { 
+        return; 
+    }
 
     // Find correct Handler in dispatch table and call the method.
     auto it = dtable.find(tag);
@@ -585,7 +861,11 @@ void ProjectReader::process_line(Project& project, const std::string& line) {
 // Main entry point:
 
 void ProjectReader::execute(Project& project, const std::string& input_file) {
-    // Main method to call. Entry point to read input_file data into Project.
+    /*
+    Main method to call. 
+    Entry point to read input_file data into Project.
+    */
+
     std::cout << "[D] Reading project ..." << std::endl;
 
     std::ifstream fh(input_file);
@@ -599,3 +879,4 @@ void ProjectReader::execute(Project& project, const std::string& input_file) {
         process_line(project, line);
     }
 }
+

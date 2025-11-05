@@ -14,8 +14,8 @@
 #include "instrument.h"
 
 std::string get_quote(const std::string& input_string) {
-    /* 
-       Get substring between first and last double quotes
+    /*
+    Get substring between first and last double quotes
     */
 
     size_t start = input_string.find('"');
@@ -29,7 +29,7 @@ std::string get_quote(const std::string& input_string) {
 
 std::string trim_string(const std::string& input_string) {
     /*
-        Trim leading and trailing whitespace
+    Trim leading and trailing whitespace
     */
 
     static const std::regex pattern("^\\s+|\\s+$");
@@ -38,7 +38,7 @@ std::string trim_string(const std::string& input_string) {
 
 std::string get_text_after_colon(const std::string& input_string) {
     /*
-        Get text after the first colon
+    Get text after the first colon
     */
 
     size_t pos = input_string.find(':');
@@ -51,8 +51,8 @@ std::string get_text_after_colon(const std::string& input_string) {
 
 std::vector<int> get_int_list(const std::string& s) {
     /*
-        Convert a space-separated list of integers into std::vector<int>
-        Example: "1, 2, 3" -> {1, 2, 3}
+    Convert a space-separated list of integers into std::vector<int>
+    Example: "1, 2, 3" -> {1, 2, 3}
     */
 
     std::vector<int> values;
@@ -66,7 +66,7 @@ std::vector<int> get_int_list(const std::string& s) {
 
 int convert_hex_str_to_int(const std::string& s) {
     /*
-        Convert a hexadecimal string (like "FF") into an integer
+    Convert a hexadecimal string (like "FF") into an integer
     */
 
     int value = 0;
@@ -80,8 +80,8 @@ int convert_hex_str_to_int(const std::string& s) {
 
 std::vector<int> get_hex_list(const std::string& s) {
     /*
-        Convert a space-separated list of hex strings into vector<int>
-        Example: "00 01 02 03" -> {0, 1, 2, 3}
+    Convert a space-separated list of hex strings into vector<int>
+    Example: "00 01 02 03" -> {0, 1, 2, 3}
     */
     
     std::vector<int> values;
@@ -97,8 +97,8 @@ std::vector<int> get_hex_list(const std::string& s) {
 
 std::vector<std::string> get_colon_fields(const std::string& s) {
     /*
-        Extract all colon-separated fields after the first colon
-        Example: "ROW XX : aa : bbb : cccc" → {"aa", "bbb", "cccc"}
+    Extract all colon-separated fields after the first colon
+    Example: "ROW XX : aa : bbb : cccc" → {"aa", "bbb", "cccc"}
     */
 
     std::vector<std::string> fields;
@@ -125,8 +125,9 @@ std::vector<std::string> get_colon_fields(const std::string& s) {
 
 bool contains_only_spaces_and_periods(const std::string& line) {
     /*
-        Returns true if the line contains only ' ' and '.'
-        Used for skipping FamiTracker "null tokens," which greatly reduces the number of items in the `track.tokens` unordered_map.
+    Returns true if the line contains only ' ' and '.'
+    Used for skipping FamiTracker "null tokens," 
+    which greatly reduces the number of items in the `track.tokens` unordered_map.
     */
 
     for (char c : line) {
