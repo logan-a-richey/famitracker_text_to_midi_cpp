@@ -6,6 +6,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <stdexcept>
+#include <list>
 
 #include "project_reader.h"
 
@@ -24,55 +25,55 @@
 
 // Ctor and Init Dtable
 ProjectReader::ProjectReader() {
-    static std::unordered_set<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT", "COMMENT" };
-    static std::unordered_set<std::string> global_settings_tags = { "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS" };
-    static std::unordered_set<std::string> macro_tags = { "MACRO", "MACROVRC6", "MACRON163", "MACROS5B" };
-    static std::unordered_set<std::string> basic_inst_tags = { "INST2A03", "INSTVRC6", "INSTN163", "INSTS5B" };
+    static std::list<std::string> song_information_tags = { "TITLE", "AUTHOR", "COPYRIGHT", "COMMENT" };
+    static std::list<std::string> global_settings_tags = { "MACHINE", "FRAMERATE", "EXPANSION", "VIBRATO", "SPLIT", "N163CHANNELS" };
+    static std::list<std::string> macro_tags = { "MACRO", "MACROVRC6", "MACRON163", "MACROS5B" };
+    static std::list<std::string> basic_inst_tags = { "INST2A03", "INSTVRC6", "INSTN163", "INSTS5B" };
     
     // init dispatch table
     dtable.clear();
     
     // metadata handlers
     for (const auto& tag : song_information_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line) { handle_song_information(project, line); };
+        dtable.insert( {tag, [this](Project& project, const std::string& line) { handle_song_information(project, line); }});
     }
     for (const auto& tag : global_settings_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line) { handle_global_settings(project, line); };
+        dtable.insert( {tag, [this](Project& project, const std::string& line) { handle_global_settings(project, line); }});
     }
 
     // macro handlers
     for (const auto& tag : macro_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line) { handle_macro(project, line); };
+        dtable.insert( {tag, [this](Project& project, const std::string& line) { handle_macro(project, line); }});
     }
     
     // dpcm handlers
-    dtable["DPCMDEF"] = [this](Project& project, const std::string& line) { handle_dpcm_def(project, line); };
-    dtable["DPCM"] = [this](Project& project, const std::string& line) { handle_dpcm_data(project, line); };
+    dtable.insert({"DPCMDEF", [this](Project& project, const std::string& line) { handle_dpcm_def(project, line); }});
+    dtable.insert({"DPCM", [this](Project& project, const std::string& line) { handle_dpcm_data(project, line); }});
 
     // groove handlers
-    dtable["GROOVE"] = [this](Project& project, const std::string& line) { handle_groove(project, line); };
-    dtable["USEGROOVE"] = [this](Project& project, const std::string& line) { handle_use_groove(project, line); };
+    dtable.insert({"GROOVE", [this](Project& project, const std::string& line) { handle_groove(project, line); }});
+    dtable.insert({"USEGROOVE", [this](Project& project, const std::string& line) { handle_use_groove(project, line); }});
 
     // instrument handlers
     for (const auto& tag : basic_inst_tags) {
-        dtable[tag] = [this](Project& project, const std::string& line) { handle_inst_basic(project, line); };
+        dtable.insert( {tag, [this](Project& project, const std::string& line) { handle_inst_basic(project, line); }});
     }
-    dtable["INSTVRC7"] = [this](Project& project, const std::string& line) { handle_inst_vrc7(project, line); };
-    dtable["INSTFDS"] = [this](Project& project, const std::string& line) { handle_inst_fds(project, line); };
+    dtable.insert({"INSTVRC7", [this](Project& project, const std::string& line) { handle_inst_vrc7(project, line); }});
+    dtable.insert({"INSTFDS", [this](Project& project, const std::string& line) { handle_inst_fds(project, line); }});
     
     // special handlers 
-    dtable["KEYDPCM"] =  [this](Project& project, const std::string& line) { handle_key_dpcm(project, line); };
-    dtable["FDSWAVE"] = [this](Project& project, const std::string& line) { handle_fds_wave(project, line); };
-    dtable["FDSMOD"] = [this](Project& project, const std::string& line) { handle_fds_mod(project, line); };
-    dtable["FDSMACRO"] = [this](Project& project, const std::string& line) { handle_fds_macro(project, line); };
-    dtable["N163WAVE"] = [this](Project& project, const std::string& line) { handle_n163_wave(project, line); };
+    dtable.insert({"KEYDPCM",  [this](Project& project, const std::string& line) { handle_key_dpcm(project, line); }});
+    dtable.insert({"FDSWAVE", [this](Project& project, const std::string& line) { handle_fds_wave(project, line); }});
+    dtable.insert({"FDSMOD", [this](Project& project, const std::string& line) { handle_fds_mod(project, line); }});
+    dtable.insert({"FDSMACRO", [this](Project& project, const std::string& line) { handle_fds_macro(project, line); }});
+    dtable.insert({"N163WAVE", [this](Project& project, const std::string& line) { handle_n163_wave(project, line); }});
 
     // track handlers
-    dtable["TRACK"] = [this](Project& project, const std::string& line) { handle_track(project, line); };
-    dtable["COLUMNS"] = [this](Project& project, const std::string& line) { handle_columns(project, line); };
-    dtable["ORDER"] = [this](Project& project, const std::string& line) { handle_order(project, line); };
-    dtable["PATTERN"] = [this](Project& project, const std::string& line) { handle_pattern(project, line); };
-    dtable["ROW"] = [this](Project& project, const std::string& line) { handle_row(project, line); };
+    dtable.insert({"TRACK", [this](Project& project, const std::string& line) { handle_track(project, line); }});
+    dtable.insert({"COLUMNS", [this](Project& project, const std::string& line) { handle_columns(project, line); }});
+    dtable.insert({"ORDER", [this](Project& project, const std::string& line) { handle_order(project, line); }});
+    dtable.insert({"PATTERN", [this](Project& project, const std::string& line) { handle_pattern(project, line); }});
+    dtable.insert({"ROW", [this](Project& project, const std::string& line) { handle_row(project, line); }});
 }
 
 // Dtor
@@ -501,16 +502,12 @@ void ProjectReader::handle_order( Project& project, const std::string& line) {
     current_track.orders.insert( {order_idx, std::move(numbers) } );
 }
 
-void ProjectReader::handle_pattern( [[maybe_unused]] Project& project, const std::string& line) {
-    /* 
-    // Not actually a requirement for this TAG:
-    
+void ProjectReader::handle_pattern( Project& project, const std::string& line) {
     if (project.tracks.empty()) {
         std::cerr << "[E] Cannot process PATTERN until a Track has been initialized." << std::endl;
         exit(1);
     }
-    Track& t = project.tracks.back();
-    */
+    // Track& t = project.tracks.back();
 
     std::stringstream ss(line);
     std::string tag;
@@ -602,4 +599,3 @@ void ProjectReader::execute(Project& project, const std::string& input_file) {
         process_line(project, line);
     }
 }
-

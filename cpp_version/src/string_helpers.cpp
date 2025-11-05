@@ -13,10 +13,11 @@
 #include "macro.h"
 #include "instrument.h"
 
-//
-// Get substring between first and last double quotes
-//
 std::string get_quote(const std::string& input_string) {
+    /* 
+       Get substring between first and last double quotes
+    */
+
     size_t start = input_string.find('"');
     size_t stop  = input_string.rfind('"');
 
@@ -26,18 +27,20 @@ std::string get_quote(const std::string& input_string) {
     return input_string.substr(start + 1, stop - start - 1);
 }
 
-//
-// Trim leading and trailing whitespace
-//
 std::string trim_string(const std::string& input_string) {
+    /*
+        Trim leading and trailing whitespace
+    */
+
     static const std::regex pattern("^\\s+|\\s+$");
     return std::regex_replace(input_string, pattern, "");
 }
 
-//
-// Get text after the first colon
-//
 std::string get_text_after_colon(const std::string& input_string) {
+    /*
+        Get text after the first colon
+    */
+
     size_t pos = input_string.find(':');
     if (pos == std::string::npos)
         return "";
@@ -46,10 +49,12 @@ std::string get_text_after_colon(const std::string& input_string) {
     return trim_string(result);
 }
 
-//
-// Convert a space-separated list of integers into std::vector<int>
-//
 std::vector<int> get_int_list(const std::string& s) {
+    /*
+        Convert a space-separated list of integers into std::vector<int>
+        Example: "1, 2, 3" -> {1, 2, 3}
+    */
+
     std::vector<int> values;
     std::istringstream iss(s);
     int num;
@@ -59,10 +64,11 @@ std::vector<int> get_int_list(const std::string& s) {
     return values;
 }
 
-//
-// Convert a hexadecimal string (like "FF") into an integer
-//
 int convert_hex_str_to_int(const std::string& s) {
+    /*
+        Convert a hexadecimal string (like "FF") into an integer
+    */
+
     int value = 0;
     std::stringstream ss;
     ss << std::hex << s;
@@ -70,11 +76,14 @@ int convert_hex_str_to_int(const std::string& s) {
     return value;
 }
 
-//
-// Convert a space-separated list of hex strings into vector<int>
-// Example: "00 01 02 03" → {0, 1, 2, 3}
-//
+
+
 std::vector<int> get_hex_list(const std::string& s) {
+    /*
+        Convert a space-separated list of hex strings into vector<int>
+        Example: "00 01 02 03" -> {0, 1, 2, 3}
+    */
+    
     std::vector<int> values;
     std::istringstream iss(s);
     std::string token;
@@ -86,16 +95,19 @@ std::vector<int> get_hex_list(const std::string& s) {
     return values;
 }
 
-//
-// Extract all colon-separated fields after the first colon
-// Example: "ROW XX : aa : bbb : cccc" → {"aa", "bbb", "cccc"}
-//
 std::vector<std::string> get_colon_fields(const std::string& s) {
+    /*
+        Extract all colon-separated fields after the first colon
+        Example: "ROW XX : aa : bbb : cccc" → {"aa", "bbb", "cccc"}
+    */
+
     std::vector<std::string> fields;
     size_t pos = s.find(':');
 
-    if (pos == std::string::npos)
-        return fields; // no colon found
+    if (pos == std::string::npos) {
+        // no colon found
+        return fields; 
+    }
 
     std::string rest = s.substr(pos + 1);
     std::istringstream iss(rest);
@@ -112,6 +124,11 @@ std::vector<std::string> get_colon_fields(const std::string& s) {
 }
 
 bool contains_only_spaces_and_periods(const std::string& line) {
+    /*
+        Returns true if the line contains only ' ' and '.'
+        Used for skipping FamiTracker "null tokens," which greatly reduces the number of items in the `track.tokens` unordered_map.
+    */
+
     for (char c : line) {
         if (c != ' ' && c != '.') {
             return false;
@@ -119,5 +136,4 @@ bool contains_only_spaces_and_periods(const std::string& line) {
     }
     return true;
 }
-
 

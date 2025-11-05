@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <regex>
 #include <iomanip>
+#include <unordered_map>
 
 #include "project_parser.h"
 #include "project.h"
@@ -19,6 +20,10 @@
 
 // template <typename T>
 int vector_get_next_item(const std::vector<int>& vec, int item) {
+    /*
+        Get the next item in a vector.
+        Used for getting the next order in a list of FamiTracker orders.
+    */
     auto it = std::find(vec.begin(), vec.end(), item);
 
     if (it == vec.end()) {
@@ -35,11 +40,12 @@ int vector_get_next_item(const std::vector<int>& vec, int item) {
 // *****************************************************************************
 // Public Methods
 
-//
-// Main Entry Point
-// Process each Track inside of Project
-//
 void ProjectParser::execute(Project& project) {
+    /*
+    Main Entry Point
+    Process each Track inside of Project
+    */
+
     std::cout << "[D] Handling project: " << project.title << std::endl;
     for (auto& track : project.tracks) {
         handle_track(project, track);
@@ -49,11 +55,12 @@ void ProjectParser::execute(Project& project) {
 // *****************************************************************************
 // Private Methods
 
-//
-// Initialize ProjectParser
-// Process a single Track from Project
-//
 void ProjectParser::handle_track( Project& project, Track& track ) {
+    /*
+    Initialize ProjectParser
+    Process a single Track from Project
+    */
+
     std::cout << "[D] Handling track: " << track.name << std::endl;
 
     if (track.orders.size() == 0) {
@@ -95,11 +102,12 @@ void ProjectParser::handle_track( Project& project, Track& track ) {
     std::cout << "[D] Finished parsing track: " << track.name << std::endl;
 };
 
-//
-// Loop through lines in the current target order. 
-// Unroll tokens and print in sequenial order
-//
 void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Track& track) {
+    /*   
+    Loop through lines in the current target order. 
+    Unroll tokens and print in sequenial order
+    */
+
     std::cout << "[D] Handling order: " << target_order << std::endl;
 
     std::vector<int> pattern_list = track.orders.at(target_order);
@@ -159,8 +167,8 @@ void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Trac
         std::string line = oss.str();
         std::cout << "[VERBOSE] " << line << std::endl;
         
-        // TODO handle control flow
-        control_flow_t res = handle_control_flow(line);
+        // Handle control flow
+        control_flow_t res = handle_control_flow(line, track);
         if (res != SKIP_NONE) {
             return;
         }
@@ -170,36 +178,92 @@ void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Trac
     target_row = 0;
 }
 
-//
-// If ^-X effect, get the value, search the echo_buffers vector, and return the new string
-//
-std::string ProjectParser::handle_echo_buffer( 
-    const std::string& token, 
-    [[maybe_unused]] int col
-) {
-    // TODO
+// TODO - implementation needed
+std::string ProjectParser::handle_echo_buffer( const std::string& token, [[maybe_unused]] int col) {
+    /* 
+        If ^-X effect, get the value, search the echo_buffers vector, and return the new string.
+        NOTE_ON, NOTE_NOISE, and NOTE_OFF add to echo buffer.
+        NOTE_RELEASE does not add to echo buffer.
+        FamiTracker echo buffer is a fixed stack of size 4. Items can be pushed off of the stack.
+    */
+
     return token;
 }
 
-//
-// Scan for CXX, BXX, and DXX order skipping effects.
-//
-control_flow_t ProjectParser::handle_control_flow(
-    [[maybe_unused]] const std::string& line
-) {
-    // TODO CXX
-    if (0) {
-        return SKIP_CXX;
-    } 
+control_flow_t ProjectParser::handle_control_flow(const std::string& line, const Track& track) {
+    /* 
+        Scan for CXX, BXX, and DXX order skipping effects within a FamiTracker row.
+        CXX stops the song. We simply return and the song stops. Since current target_order has not changed, seen_it will trigger and exit the while loop.
+        BXX goes to order XX at row 0. If XX is not in the list of orders, we go to the last order.
+        DXX goes to the next order at row XX. If XX is out of bounds, we go to the last row of the order, (num_rows - 1).
+    */
 
-    // TODO BXX
-    if (0) {
-        return SKIP_BXX;
+    // Cxx effect - stop the song
+    {
+        static std::regex cxx_pattern(R"(C[0-9A-F]{2})");
+        if (std::regex_search(line, cxx_pattern)) {
+            return SKIP_CXX;
+        }
     }
 
-    // TODO DXX
-    if (0) {
-        return SKIP_DXX;
+    // Bxx effect - go to order XX at row 0
+    {
+        static std::regex bxx_pattern(R"(B[0-9A-F]{2})");
+        std::smatch matches;
+        std::string::const_iterator search_start(line.cbegin());
+        std::string last_match;
+
+        // Find *all* matches and store the last
+        while (std::regex_search(search_start, line.cend(), matches, bxx_pattern)) {
+            last_match = matches[0];
+            search_start = matches.suffix().first;
+        }
+
+        if (!last_match.empty()) {
+            // int bxx_value = std::stoi(last_match.substr(1), nullptr, 16);
+            int bxx_value = convert_hex_str_to_int(last_match.substr(1));
+
+            if (std::find(sorted_order_keys.begin(), sorted_order_keys.end(), bxx_value) == sorted_order_keys.end()) {
+                target_order = sorted_order_keys.empty() ? 0 : sorted_order_keys.back();
+            } else {
+                target_order = bxx_value;
+            }
+
+            target_row = 0;
+            return SKIP_BXX;
+        }
+    }
+
+    // Dxx effect - go to next order, row XX
+    {
+        static std::regex dxx_pattern(R"(D[0-9A-F]{2})");
+        std::smatch matches;
+        std::string::const_iterator search_start(line.cbegin());
+        std::string last_match;
+
+        while (std::regex_search(search_start, line.cend(), matches, dxx_pattern)) {
+            last_match = matches[0];
+            search_start = matches.suffix().first;
+        }
+
+        if (!last_match.empty()) {
+            // int dxx_value = std::stoi(last_match.substr(1), nullptr, 16);
+            int dxx_value = convert_hex_str_to_int(last_match.substr(1));
+
+            // Clamp to [0, track.num_rows - 1]
+            dxx_value = std::max(0, std::min(dxx_value, track.num_rows - 1));
+            
+            auto it = std::find(sorted_order_keys.begin(), sorted_order_keys.end(), target_order);
+            if (it != sorted_order_keys.end() && ++it != sorted_order_keys.end()) {
+                target_order = *it;
+            } else if (!sorted_order_keys.empty()) {
+                // fallback
+                target_order = sorted_order_keys.back(); 
+            }
+
+            target_row = dxx_value;
+            return SKIP_DXX;
+        }
     }
 
     return SKIP_NONE;
