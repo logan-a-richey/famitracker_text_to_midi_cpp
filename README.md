@@ -1,4 +1,4 @@
-# README: Famitracker Text To MIDI — C++ Version
+# FamiTracker Text To MIDI - C++ Version
 
 A C++ application that converts a FamiTracker text export file (`.txt`) into a MIDI file.
 
@@ -12,7 +12,7 @@ This tool enables efficient conversion of tracker compositions into standard MID
 * `ProjectReader` loads and parses the text file line by line.
 * Uses an `std::unordered_map<std::string, std::function<void(...)>>` dispatch table for opcode handling.
 * Processes large text exports (~200,000 lines) in under 3 seconds.
-* `ProjectFormatter` decompresses pattern tokens into sequential tracks.
+* `ProjectParser` decompresses pattern tokens into sequential tracks.
 * Custom `MidiWriter` class handles MIDI event construction and low-level binary writing.
 * `ProjectExporter` creates full MIDI tracks for each song in the module.
 
@@ -59,6 +59,10 @@ This version highlights:
 * Git repository management and collaborative development discipline.
 
 ---
+
+## Todo:
+* Import `MidiWriter` submodule.
+* Implement `ProjectExporter` class.
 
 ## Next Steps
 
