@@ -21,4 +21,5 @@ std::vector<std::string> get_colon_fields(const std::string& s);
 
 bool contains_only_spaces_and_periods(const std::string& line);
 
+std::string sanitize_string(const std::string& input);
 

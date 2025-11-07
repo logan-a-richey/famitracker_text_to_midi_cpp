@@ -138,3 +138,45 @@ bool contains_only_spaces_and_periods(const std::string& line) {
     return true;
 }
 
+std::string sanitize_string(const std::string& input) {
+    /*
+    Transform a string to snake_case string.
+    Used for generating file names.
+    */
+
+    std::string sanitized = input;
+    
+    /* Lowercase string:
+    std::transform iterates through the string, applying std::tolower to each character. 
+    It is crucial to cast the character to unsigned char before passing it to std::tolower 
+    to avoid potential undefined behavior with negative char values.
+    */
+    std::transform(
+        sanitized.begin(), 
+        sanitized.end(), 
+        sanitized.begin(), 
+        [](unsigned char c){ 
+            return std::tolower(c); 
+        }
+    );
+    
+    // Transform all nonalphanumeric chars to _
+    for (char& c : sanitized) {
+        if (!std::isalnum(static_cast<unsigned char>(c))) {
+            c = '_';
+        }
+    }
+
+    // Sub multiple _ for a single _
+    sanitized = std::regex_replace(sanitized, std::regex("__+"), "_");
+
+    // Remove leading and trailing underscores
+    if (!sanitized.empty() && sanitized.front() == '_') {
+        sanitized.erase(0, 1);
+    }
+    if (!sanitized.empty() && sanitized.back() == '_') {
+        sanitized.pop_back();
+    }
+
+    return sanitized;
+}

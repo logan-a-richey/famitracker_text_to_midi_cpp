@@ -621,7 +621,7 @@ void ProjectReader::handle_fds_macro( Project& project, const std::string& line)
         default:
             return;
     }
-    std::cout << "[D] Assigned FDS macro to instrument: " << foundObject.name << std::endl;
+    // std::cout << "[D] Assigned FDS macro to instrument: " << foundObject.name << std::endl;
     
     // save the macro to project.macros in case we want it later
     std::string macro_key = generate_macro_key(INST_FDS, macro_t, inst_idx);
@@ -659,7 +659,7 @@ void ProjectReader::handle_n163_wave( Project& project, const std::string& line)
 
     foundObject.n163_settings.wave_table.insert( {wave_idx, std::move(numbers) } ); 
     
-    std::cout << "[D] Assigned N163 wave to instrument: " << foundObject.name << std::endl;
+    // std::cout << "[D] Assigned N163 wave to instrument: " << foundObject.name << std::endl;
 }
 
 void ProjectReader::handle_track( Project& project, const std::string& line) {
@@ -866,7 +866,7 @@ void ProjectReader::execute(Project& project, const std::string& input_file) {
     Entry point to read input_file data into Project.
     */
 
-    std::cout << "[D] Reading project ..." << std::endl;
+    // std::cout << "[D] Reading project ..." << std::endl;
 
     std::ifstream fh(input_file);
     if (!fh.is_open()) {

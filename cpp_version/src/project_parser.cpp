@@ -24,8 +24,8 @@ int vector_get_next_item(const std::vector<int>& vec, int item) {
         Get the next item in a vector.
         Used for getting the next order in a list of FamiTracker orders.
     */
+    
     auto it = std::find(vec.begin(), vec.end(), item);
-
     if (it == vec.end()) {
         std::cerr << "[E] Item not found in list." << std::endl;
         return -1;
@@ -46,7 +46,7 @@ void ProjectParser::execute(Project& project) {
     Process each Track inside of Project
     */
 
-    std::cout << "[D] Handling project: " << project.title << std::endl;
+    // std::cout << "[D] Handling project: " << project.title << std::endl;
     for (auto& track : project.tracks) {
         handle_track(project, track);
     }
@@ -61,8 +61,7 @@ void ProjectParser::handle_track( Project& project, Track& track ) {
     Process a single Track from Project
     */
 
-    std::cout << "[D] Handling track: " << track.name << std::endl;
-
+    // std::cout << "[D] Handling track: " << track.name << std::endl;
     if (track.orders.size() == 0) {
         std::cerr << "Cannot scan empty track" << std::endl;
         return;
@@ -99,7 +98,7 @@ void ProjectParser::handle_track( Project& project, Track& track ) {
         seen_it.insert(target_order);
         handle_target_order(project, track);
     }
-    std::cout << "[D] Finished parsing track: " << track.name << std::endl;
+    // std::cout << "[D] Finished parsing track: " << track.name << std::endl;
 };
 
 void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Track& track) {
@@ -108,7 +107,7 @@ void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Trac
     Unroll tokens and print in sequenial order
     */
 
-    std::cout << "[D] Handling order: " << target_order << std::endl;
+    // std::cout << "[D] Handling order: " << target_order << std::endl;
 
     std::vector<int> pattern_list = track.orders.at(target_order);
 
@@ -165,7 +164,7 @@ void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Trac
         }
         
         std::string line = oss.str();
-        std::cout << "[VERBOSE] " << line << std::endl;
+        // std::cout << "[VERBOSE] " << line << std::endl;
         
         // Handle control flow
         control_flow_t res = handle_control_flow(line, track);
