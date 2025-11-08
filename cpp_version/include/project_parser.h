@@ -4,24 +4,10 @@
 
 #include <vector>
 #include <string>
+#include "constants.h"
 
 struct Project;
 struct Track;
-
-enum control_flow_t {
-    SKIP_NONE = 0,  // no skip
-    SKIP_BXX,       // for frame skipping
-    SKIP_CXX,       // for song skipping
-    SKIP_DXX        // for row skipping
-};
-enum token_t {
-    BLANK = 0,      // ...
-    NOTE_ON,        // C-2
-    NOISE_ON,       // A-#
-    NOTE_OFF,       // ---
-    NOTE_RELEASE,   // ===
-    ECHO_NOTE       // ^-2
-};
 
 class ProjectParser {
 public:
@@ -42,5 +28,5 @@ private:
     void handle_track(Project& project, Track& track);
     void handle_target_order(Project& project, Track& track);
     std::string handle_echo_buffer(const std::string& token, int col);
-    control_flow_t handle_control_flow(const std::string& line, const Track& track);
+    ControlFlowType handle_control_flow(const std::string& line, const Track& track);
 };

@@ -15,6 +15,7 @@
 #include "track.h"
 #include "string_helpers.h"
 #include "key_gen.h"
+#include "constants.h"
 
 // Helper function
 
@@ -164,10 +165,11 @@ void ProjectParser::handle_target_order ([[maybe_unused]] Project& project, Trac
         }
         
         std::string line = oss.str();
+        track.lines.push_back(line);
         // std::cout << "[VERBOSE] " << line << std::endl;
         
         // Handle control flow
-        control_flow_t res = handle_control_flow(line, track);
+        ControlFlowType res = handle_control_flow(line, track);
         if (res != SKIP_NONE) {
             return;
         }
@@ -189,7 +191,7 @@ std::string ProjectParser::handle_echo_buffer( const std::string& token, [[maybe
     return token;
 }
 
-control_flow_t ProjectParser::handle_control_flow(const std::string& line, const Track& track) 
+ControlFlowType ProjectParser::handle_control_flow(const std::string& line, const Track& track) 
 {
     /* 
         Scan for CXX, BXX, and DXX order skipping effects within a FamiTracker row.

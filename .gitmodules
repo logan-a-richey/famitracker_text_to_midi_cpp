@@ -1,0 +1,3 @@
+[submodule "cpp_version/submodules"]
+	path = cpp_version/submodules
+	url = https://github.com/logan-a-richey/midi_writer_cpp.git
